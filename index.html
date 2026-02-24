@@ -10,107 +10,138 @@
         body { background: #050508; color: #fff; font-family: 'Share Tech Mono', monospace; }
         .admin-input { background: #0f101a; border: 1px solid #d62f7f33; padding: 12px; width: 100%; color: white; outline: none; }
         .admin-input:focus { border-color: #d62f7f; }
-        .btn-pub { background: #d62f7f; color: white; padding: 15px; width: 100%; font-weight: bold; transition: 0.3s; }
+        .btn-pub { background: #d62f7f; color: white; padding: 15px; width: 100%; font-weight: bold; transition: 0.3s; cursor: pointer; }
         .btn-pub:hover { background: white; color: #d62f7f; }
+        .btn-pub:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body class="p-4 md:p-12">
 
     <div id="login-zone" class="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
-        <div class="max-w-md w-full border border-magenta/30 p-8 bg-black">
-            <h1 class="text-magenta text-xl mb-6 tracking-tighter uppercase font-bold text-center">Authentication_Required</h1>
+        <div class="max-w-md w-full border border-magenta/30 p-8 bg-black shadow-[0_0_50px_rgba(214,47,127,0.1)]">
+            <h1 class="text-magenta text-xl mb-6 tracking-tighter uppercase font-bold text-center italic">Authentication_Required</h1>
             <input type="email" id="email" placeholder="ADMIN_EMAIL" class="admin-input mb-4">
             <input type="password" id="password" placeholder="PASSWORD" class="admin-input mb-6">
-            <button onclick="handleLogin()" class="btn-pub">LOGIN_TO_INTERFACE</button>
+            <button id="login-button" class="btn-pub uppercase tracking-widest text-xs">Login_to_Interface</button>
         </div>
     </div>
 
     <div id="admin-panel" class="hidden max-w-4xl mx-auto">
         <header class="flex justify-between items-center mb-12 border-b border-magenta/20 pb-6">
-            <h1 class="text-2xl font-bold text-magenta">HQ_DASHBOARD</h1>
-            <button onclick="handleLogout()" class="text-[10px] text-gray-500 hover:text-white uppercase">[ Déconnexion ]</button>
+            <h1 class="text-2xl font-bold text-magenta italic uppercase tracking-tighter">HQ_DASHBOARD</h1>
+            <button id="logout-button" class="text-[10px] text-gray-500 hover:text-white uppercase tracking-[0.2em] border border-white/10 px-3 py-1">[ Déconnexion ]</button>
         </header>
 
         <form id="post-form" class="space-y-6">
             <div>
-                <label class="block text-[10px] text-gray-500 mb-2">TITRE DU RAPPORT</label>
+                <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest">Titre du rapport</label>
                 <input type="text" id="title" required class="admin-input text-xl" placeholder="Ex: VICTOIRE EN TOURNOI VALORANT">
             </div>
+            <div>
+                <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest">Image de couverture (URL)</label>
+                <input type="url" id="image_url" class="admin-input" placeholder="https://imgur.com/votre-image.jpg">
+            </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-[10px] text-gray-500 mb-2">TAGS (séparés par virgules)</label>
+                    <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest">Tags (séparés par virgules)</label>
                     <input type="text" id="tags" class="admin-input" placeholder="VALORANT, WIN, NEWS">
                 </div>
                 <div>
-                    <label class="block text-[10px] text-gray-500 mb-2">SLUG (URL unique)</label>
-                    <input type="text" id="slug" required class="admin-input" placeholder="victoire-valorant-2024">
+                    <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest">Slug (URL unique)</label>
+                    <input type="text" id="slug" required class="admin-input lowercase" placeholder="victoire-valorant-2026">
                 </div>
             </div>
 
             <div>
-                <label class="block text-[10px] text-gray-500 mb-2">CONTENU (MARKDOWN SUPPORTED)</label>
-                <textarea id="content" required rows="12" class="admin-input font-mono text-sm" placeholder="# Votre article ici..."></textarea>
+                <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest">Contenu (Markdown Supporté)</label>
+                <textarea id="content" required rows="12" class="admin-input font-mono text-sm" placeholder="# Entrez votre rapport ici..."></textarea>
             </div>
 
-            <button type="submit" id="pub-btn" class="btn-pub uppercase tracking-widest">Diffuser le rapport sur le site principal</button>
+            <button type="submit" id="pub-btn" class="btn-pub uppercase tracking-[0.3em]">Diffuser sur gowrax.me</button>
         </form>
     </div>
 
     <script>
+        // 1. CONFIGURATION
         const SUPABASE_URL = 'https://nvtcjaallxoweujbyhng.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52dGNqYWFsbHhvd2V1amJ5aG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NDc4OTEsImV4cCI6MjA4NzQyMzg5MX0.a0FkgYwG3yxu0GMXA6wV-6GqFamB9Pu-E57_z6KkHik';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // 2. INITIALISATION DU CLIENT
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- AUTH LOGIC ---
-        async function handleLogin() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            
-            if (error) alert("ACCÈS REFUSÉ : " + error.message);
-            else checkSession();
-        }
-
-        async function handleLogout() {
-            await supabase.auth.signOut();
-            location.reload();
-        }
-
+        // 3. GESTIONNAIRE DE SESSION
         async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
                 document.getElementById('login-zone').classList.add('hidden');
                 document.getElementById('admin-panel').classList.remove('hidden');
+            } else {
+                document.getElementById('login-zone').classList.remove('hidden');
+                document.getElementById('admin-panel').classList.add('hidden');
             }
         }
-        checkSession();
 
-        // --- POST LOGIC ---
-        document.getElementById('post-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('pub-btn');
-            btn.innerText = "TRANSMISSION_EN_COURS...";
+        // 4. ÉCOUTEURS D'ÉVÉNEMENTS (Bulletproof Method)
+        document.addEventListener('DOMContentLoaded', () => {
+            checkSession();
 
-            const tagsArray = document.getElementById('tags').value.split(',').map(t => t.trim().toUpperCase());
-            
-            const payload = {
-                title: document.getElementById('title').value,
-                slug: document.getElementById('slug').value,
-                content: document.getElementById('content').value,
-                tags: tagsArray
-            };
+            // Bouton de connexion
+            document.getElementById('login-button').addEventListener('click', async () => {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const btn = document.getElementById('login-button');
 
-            const { error } = await supabase.from('posts').insert([payload]);
+                btn.disabled = true;
+                btn.innerText = "AUTHENTICATION...";
 
-            if (error) {
-                alert("ERREUR_SYSTÈME : " + error.message);
-                btn.innerText = "RÉESSAYER";
-            } else {
-                alert("RAPPORT PUBLIÉ AVEC SUCCÈS");
-                document.getElementById('post-form').reset();
-                btn.innerText = "Diffuser le rapport sur le site principal";
-            }
+                const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    alert("ACCÈS REFUSÉ : " + error.message);
+                    btn.disabled = false;
+                    btn.innerText = "LOGIN_TO_INTERFACE";
+                } else {
+                    checkSession();
+                }
+            });
+
+            // Bouton de déconnexion
+            document.getElementById('logout-button').addEventListener('click', async () => {
+                await _supabase.auth.signOut();
+                location.reload();
+            });
+
+            // Formulaire de publication
+            document.getElementById('post-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const pubBtn = document.getElementById('pub-btn');
+                pubBtn.disabled = true;
+                pubBtn.innerText = "TRANSMISSION_EN_COURS...";
+
+                const tagsArray = document.getElementById('tags').value.split(',').map(t => t.trim().toUpperCase());
+                
+                const payload = {
+                    title: document.getElementById('title').value,
+                    slug: document.getElementById('slug').value,
+                    content: document.getElementById('content').value,
+                    image_url: document.getElementById('image_url').value,
+                    tags: tagsArray
+                };
+
+                const { error } = await _supabase.from('posts').insert([payload]);
+
+                if (error) {
+                    alert("ERREUR_SYSTÈME : " + error.message);
+                    pubBtn.disabled = false;
+                    pubBtn.innerText = "RÉESSAYER";
+                } else {
+                    alert("RAPPORT PUBLIÉ AVEC SUCCÈS SUR LA DATABASE");
+                    document.getElementById('post-form').reset();
+                    pubBtn.disabled = false;
+                    pubBtn.innerText = "Diffuser sur gowrax.me";
+                }
+            });
         });
     </script>
 </body>
