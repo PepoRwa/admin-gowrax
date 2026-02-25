@@ -2,147 +2,352 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>GRX | CENTRAL_CONTROL</title>
+    <title>GRX | HQ_DASHBOARD</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
     <style>
-        body { background: #050508; color: #fff; font-family: 'Share Tech Mono', monospace; }
-        .admin-input { background: #0f101a; border: 1px solid #d62f7f33; padding: 12px; width: 100%; color: white; outline: none; }
-        .admin-input:focus { border-color: #d62f7f; }
-        .btn-pub { background: #d62f7f; color: white; padding: 15px; width: 100%; font-weight: bold; transition: 0.3s; cursor: pointer; }
-        .btn-pub:hover { background: white; color: #d62f7f; }
-        .btn-pub:disabled { opacity: 0.5; cursor: not-allowed; }
+        :root { --magenta: #d62f7f; --abyss: #050508; }
+        body { background: var(--abyss); color: #fff; font-family: 'Share Tech Mono', monospace; }
+        .admin-input { background: #0f101a; border: 1px solid #d62f7f33; padding: 10px; width: 100%; color: white; outline: none; font-size: 0.8rem; }
+        .admin-input:focus { border-color: var(--magenta); box-shadow: 0 0 10px #d62f7f22; }
+        .nav-link { border-left: 2px solid transparent; transition: 0.3s; cursor: pointer; }
+        .nav-link.active { border-left: 2px solid var(--magenta); color: var(--magenta); background: #d62f7f0a; }
+        .btn-pub { background: var(--magenta); color: white; padding: 12px; font-weight: bold; transition: 0.3s; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
+        .btn-pub:hover { background: white; color: var(--magenta); }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        .btn-cancel { border: 1px solid #444; color: #888; padding: 12px; font-size: 0.7rem; text-transform: uppercase; cursor: pointer; }
+        .btn-cancel:hover { border-color: #fff; color: #fff; }
     </style>
 </head>
-<body class="p-4 md:p-12">
+<body class="flex min-h-screen">
 
-    <div id="login-zone" class="fixed inset-0 bg-black z-50 flex items-center justify-center p-4">
-        <div class="max-w-md w-full border border-magenta/30 p-8 bg-black shadow-[0_0_50px_rgba(214,47,127,0.1)]">
-            <h1 class="text-magenta text-xl mb-6 tracking-tighter uppercase font-bold text-center italic">Authentication_Required</h1>
+    <div id="login-zone" class="fixed inset-0 bg-black z-[100] flex items-center justify-center p-4">
+        <div class="max-w-md w-full border border-magenta/30 p-8 bg-black">
+            <h1 class="text-magenta text-xl mb-6 tracking-tighter uppercase font-bold text-center">GRX_AUTH_LEVEL_01</h1>
             <input type="email" id="email" placeholder="ADMIN_EMAIL" class="admin-input mb-4">
             <input type="password" id="password" placeholder="PASSWORD" class="admin-input mb-6">
-            <button id="login-button" class="btn-pub uppercase tracking-widest text-xs">Login_to_Interface</button>
+            <button id="login-button" class="btn-pub w-full">Access_HQ</button>
         </div>
     </div>
 
-    <div id="admin-panel" class="hidden max-w-4xl mx-auto">
-        <header class="flex justify-between items-center mb-12 border-b border-magenta/20 pb-6">
-            <h1 class="text-2xl font-bold text-magenta italic uppercase tracking-tighter">HQ_DASHBOARD</h1>
-            <button id="logout-button" class="text-[10px] text-gray-500 hover:text-white uppercase tracking-[0.2em] border border-white/10 px-3 py-1">[ Déconnexion ]</button>
-        </header>
+    <aside id="sidebar" class="w-64 border-r border-white/10 p-6 hidden flex flex-col">
+        <div class="mb-12 text-center">
+            <h2 class="text-magenta text-2xl font-bold italic tracking-tighter">HQ_CONTROL</h2>
+            <span class="text-[8px] text-gray-600 uppercase tracking-widest">Protocol: Secure_Access</span>
+        </div>
+        <nav class="space-y-4 flex-1">
+            <div onclick="switchView('view-news')" class="nav-link p-3 text-xs uppercase tracking-widest active" id="link-news">// Gérer_News</div>
+            <div onclick="switchView('view-members')" class="nav-link p-3 text-xs uppercase tracking-widest" id="link-members">// Gérer_Membres</div>
+        </nav>
+        <button id="logout-button" class="text-[10px] text-gray-600 hover:text-white uppercase mt-auto">[ Déconnexion ]</button>
+    </aside>
 
-        <form id="post-form" class="space-y-6">
-            <div>
-                <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest">Titre du rapport</label>
-                <input type="text" id="title" required class="admin-input text-xl" placeholder="Ex: VICTOIRE EN TOURNOI VALORANT">
-            </div>
-            <div>
-                <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest">Image de couverture (URL)</label>
-                <input type="url" id="image_url" class="admin-input" placeholder="https://imgur.com/votre-image.jpg">
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest">Tags (séparés par virgules)</label>
-                    <input type="text" id="tags" class="admin-input" placeholder="VALORANT, WIN, NEWS">
+    <main id="main-panel" class="flex-1 p-8 md:p-12 hidden overflow-y-auto">
+        
+        <section id="view-news" class="view-section active">
+            <header class="mb-10">
+                <h3 class="text-xl font-bold uppercase italic tracking-tight text-magenta">News_Module</h3>
+                <p id="news-form-status" class="text-[9px] text-gray-500 uppercase">Mode: Nouveau_Rapport_Tactique</p>
+            </header>
+            <form id="news-form" class="space-y-4 max-w-3xl">
+                <input type="hidden" id="editing-news-id" value="">
+                <input type="text" id="n-title" placeholder="TITRE DU RAPPORT" class="admin-input text-lg" required>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="n-slug" placeholder="SLUG" class="admin-input" required>
+                    <input type="text" id="n-tags" placeholder="TAGS (SÉPARÉS PAR VIRGULES)" class="admin-input">
                 </div>
-                <div>
-                    <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest">Slug (URL unique)</label>
-                    <input type="text" id="slug" required class="admin-input lowercase" placeholder="victoire-valorant-2026">
+                <input type="url" id="n-image" placeholder="URL IMAGE BANNIÈRE" class="admin-input">
+                <textarea id="n-content" rows="10" placeholder="# CONTENU MARKDOWN..." class="admin-input font-mono text-xs" required></textarea>
+                
+                <div class="flex gap-4">
+                    <button type="submit" id="news-submit-btn" class="btn-pub flex-1">Diffuser_News</button>
+                    <button type="button" id="news-cancel-btn" class="btn-cancel hidden" onclick="resetNewsForm()">Annuler</button>
                 </div>
-            </div>
+            </form>
 
-            <div>
-                <label class="block text-[10px] text-gray-500 mb-2 uppercase tracking-widest">Contenu (Markdown Supporté)</label>
-                <textarea id="content" required rows="12" class="admin-input font-mono text-sm" placeholder="# Entrez votre rapport ici..."></textarea>
+            <div class="mt-20">
+                <h4 class="text-magenta text-[10px] uppercase tracking-widest mb-6 border-b border-magenta/20 pb-2">// ARCHIVES_DES_RAPPORTS</h4>
+                <div id="news-list" class="space-y-2"></div>
             </div>
+        </section>
 
-            <button type="submit" id="pub-btn" class="btn-pub uppercase tracking-[0.3em]">Diffuser sur gowrax.me</button>
-        </form>
-    </div>
+        <section id="view-members" class="view-section">
+            <header class="mb-10">
+                <h3 class="text-xl font-bold uppercase italic tracking-tight text-magenta">Personnel_Module</h3>
+                <p id="form-status" class="text-[9px] text-gray-500 uppercase">Mode: Création_Nouvel_Agent</p>
+            </header>
+            
+            <form id="member-form" class="space-y-4 max-w-3xl">
+                <input type="hidden" id="editing-id" value="">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="m-nickname" placeholder="PSEUDO" class="admin-input" required>
+                    <input type="text" id="m-slug" placeholder="SLUG" class="admin-input" required>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <select id="m-category" class="admin-input">
+                        <option value="staff">CATÉGORIE: STAFF</option>
+                        <option value="high_roster">CATÉGORIE: HIGH_ROSTER</option>
+                    </select>
+                    <input type="text" id="m-role" placeholder="RÔLE PRINCIPAL" class="admin-input" required>
+                    <input type="number" id="m-priority" placeholder="PRIORITÉ" class="admin-input" value="0">
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <input type="text" id="m-number" placeholder="N° MAILLOT" class="admin-input">
+                    <input type="text" id="m-roster" placeholder="ROSTER" class="admin-input">
+                    <input type="text" id="m-additional" placeholder="RÔLES SECONDAIRES (VIRGULES)" class="admin-input">
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <input type="text" id="m-twitch" placeholder="TWITCH USER" class="admin-input">
+                    <input type="text" id="m-twitter" placeholder="TWITTER USER" class="admin-input">
+                    <input type="text" id="m-instagram" placeholder="INSTA USER" class="admin-input">
+                </div>
+                <input type="url" id="m-photo" placeholder="URL PHOTO PROFIL" class="admin-input">
+                <input type="url" id="m-tracker" placeholder="URL TRACKER.GG" class="admin-input">
+                <input type="text" id="m-quote" placeholder="CITATION D'HONNEUR" class="admin-input italic">
+                <textarea id="m-description" rows="5" placeholder="BIO..." class="admin-input text-xs"></textarea>
+                
+                <div class="flex gap-4">
+                    <button type="submit" id="submit-btn" class="btn-pub flex-1">Enregistrer_Membre</button>
+                    <button type="button" id="cancel-btn" class="btn-cancel hidden" onclick="resetForm()">Annuler_Edition</button>
+                </div>
+            </form>
+
+            <div class="mt-20">
+                <h4 class="text-magenta text-[10px] uppercase tracking-widest mb-6 border-b border-magenta/20 pb-2">// LISTE_DU_PERSONNEL</h4>
+                <div id="members-list" class="space-y-2"></div>
+            </div>
+        </section>
+    </main>
 
     <script>
-        // 1. CONFIGURATION
         const SUPABASE_URL = 'https://nvtcjaallxoweujbyhng.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52dGNqYWFsbHhvd2V1amJ5aG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NDc4OTEsImV4cCI6MjA4NzQyMzg5MX0.a0FkgYwG3yxu0GMXA6wV-6GqFamB9Pu-E57_z6KkHik';
-        
-        // 2. INITIALISATION DU CLIENT
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 3. GESTIONNAIRE DE SESSION
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            document.getElementById('link-' + viewId.split('-')[1]).classList.add('active');
+            
+            // On charge les listes selon l'onglet
+            if(viewId === 'view-members') loadMembersList();
+            if(viewId === 'view-news') loadNewsList();
+        }
+
         async function checkSession() {
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
-                document.getElementById('login-zone').classList.add('hidden');
-                document.getElementById('admin-panel').classList.remove('hidden');
-            } else {
-                document.getElementById('login-zone').classList.remove('hidden');
-                document.getElementById('admin-panel').classList.add('hidden');
+                document.getElementById('login-zone').style.display = 'none';
+                document.getElementById('sidebar').classList.remove('hidden');
+                document.getElementById('main-panel').classList.remove('hidden');
+                loadMembersList();
+                loadNewsList(); // Ajoute ça ici
             }
         }
 
-        // 4. ÉCOUTEURS D'ÉVÉNEMENTS (Bulletproof Method)
-        document.addEventListener('DOMContentLoaded', () => {
-            checkSession();
+        document.getElementById('login-button').addEventListener('click', async () => {
+            const { error } = await _supabase.auth.signInWithPassword({
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            });
+            if (error) alert(error.message); else checkSession();
+        });
 
-            // Bouton de connexion
-            document.getElementById('login-button').addEventListener('click', async () => {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-                const btn = document.getElementById('login-button');
+        document.getElementById('logout-button').addEventListener('click', async () => {
+            await _supabase.auth.signOut();
+            location.reload();
+        });
 
-                btn.disabled = true;
-                btn.innerText = "AUTHENTICATION...";
+        // MEMBRES : CHARGEMENT LISTE
+        async function loadMembersList() {
+            const { data: members, error } = await _supabase.from('members').select('*').order('priority_level', { ascending: false });
+            const list = document.getElementById('members-list');
+            list.innerHTML = '';
+            if (members) {
+                members.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group";
+                    div.innerHTML = `
+                        <div class="cursor-pointer flex-1" onclick="editMember('${m.id}')">
+                            <span class="text-xs font-bold text-white group-hover:text-magenta">${m.nickname}</span>
+                            <span class="text-[9px] text-gray-500 ml-2 uppercase tracking-tighter">${m.main_role}</span>
+                        </div>
+                        <button onclick="deleteMember('${m.id}')" class="text-[8px] text-red-500 hover:text-white uppercase font-bold">[ Supprimer ]</button>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+        }
 
-                const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+        // MEMBRES : REMPLIR POUR ÉDITION
+        async function editMember(id) {
+            const { data: m } = await _supabase.from('members').select('*').eq('id', id).single();
+            if (m) {
+                document.getElementById('editing-id').value = m.id;
+                document.getElementById('m-nickname').value = m.nickname;
+                document.getElementById('m-slug').value = m.slug;
+                document.getElementById('m-category').value = m.category;
+                document.getElementById('m-role').value = m.main_role;
+                document.getElementById('m-priority').value = m.priority_level;
+                document.getElementById('m-number').value = m.team_number || '';
+                document.getElementById('m-roster').value = m.roster || '';
+                document.getElementById('m-additional').value = (m.additional_roles || []).join(', ');
+                document.getElementById('m-twitch').value = m.social_twitch || '';
+                document.getElementById('m-twitter').value = m.social_twitter || '';
+                document.getElementById('m-instagram').value = m.social_instagram || '';
+                document.getElementById('m-photo').value = m.photo_url || '';
+                document.getElementById('m-tracker').value = m.tracker_url || '';
+                document.getElementById('m-quote').value = m.quote || '';
+                document.getElementById('m-description').value = m.description || '';
 
-                if (error) {
-                    alert("ACCÈS REFUSÉ : " + error.message);
-                    btn.disabled = false;
-                    btn.innerText = "LOGIN_TO_INTERFACE";
-                } else {
-                    checkSession();
+                document.getElementById('submit-btn').innerText = "Mettre_à_jour_Agent";
+                document.getElementById('form-status').innerText = "Mode: Édition_Agent_Existant";
+                document.getElementById('cancel-btn').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('member-form').reset();
+            document.getElementById('editing-id').value = '';
+            document.getElementById('submit-btn').innerText = "Enregistrer_Membre";
+            document.getElementById('form-status').innerText = "Mode: Création_Nouvel_Agent";
+            document.getElementById('cancel-btn').classList.add('hidden');
+        }
+
+        // MEMBRES : ENVOI (INSERT ou UPDATE)
+        document.getElementById('member-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editing-id').value;
+            const roles = document.getElementById('m-additional').value.split(',').map(t => t.trim()).filter(t => t !== "");
+            
+            const payload = {
+                nickname: document.getElementById('m-nickname').value,
+                slug: document.getElementById('m-slug').value,
+                category: document.getElementById('m-category').value,
+                main_role: document.getElementById('m-role').value,
+                roster: document.getElementById('m-roster').value,
+                team_number: document.getElementById('m-number').value,
+                priority_level: parseInt(document.getElementById('m-priority').value),
+                photo_url: document.getElementById('m-photo').value,
+                tracker_url: document.getElementById('m-tracker').value,
+                quote: document.getElementById('m-quote').value,
+                description: document.getElementById('m-description').value,
+                additional_roles: roles,
+                social_twitch: document.getElementById('m-twitch').value,
+                social_twitter: document.getElementById('m-twitter').value,
+                social_instagram: document.getElementById('m-instagram').value
+            };
+
+            let res;
+            if (id) {
+                res = await _supabase.from('members').update(payload).eq('id', id);
+            } else {
+                res = await _supabase.from('members').insert([payload]);
+            }
+
+            if (res.error) alert(res.error.message);
+            else {
+                alert(id ? "Mise à jour réussie" : "Nouvel agent créé");
+                resetForm();
+                loadMembersList();
+            }
+        });
+
+        async function deleteMember(id) {
+            if (confirm("Supprimer définitivement cet agent ?")) {
+                await _supabase.from('members').delete().eq('id', id);
+                loadMembersList();
+            }
+        }
+        // --- LOGIQUE NEWS : CHARGEMENT LISTE ---
+            async function loadNewsList() {
+                const { data: posts, error } = await _supabase.from('posts').select('id, title, slug').order('created_at', { ascending: false });
+                const list = document.getElementById('news-list');
+                list.innerHTML = '';
+                if (posts) {
+                    posts.forEach(p => {
+                        const div = document.createElement('div');
+                        div.className = "flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group";
+                        div.innerHTML = `
+                            <div class="cursor-pointer flex-1" onclick="editNews('${p.id}')">
+                                <span class="text-xs font-bold text-white group-hover:text-magenta">${p.title}</span>
+                                <span class="text-[9px] text-gray-500 ml-2 uppercase tracking-tighter italic">/${p.slug}</span>
+                            </div>
+                            <button onclick="deleteNews('${p.id}')" class="text-[8px] text-red-500 hover:text-white uppercase font-bold">[ Supprimer ]</button>
+                        `;
+                        list.appendChild(div);
+                    });
                 }
-            });
+            }
 
-            // Bouton de déconnexion
-            document.getElementById('logout-button').addEventListener('click', async () => {
-                await _supabase.auth.signOut();
-                location.reload();
-            });
+            // --- NEWS : REMPLIR POUR ÉDITION ---
+            async function editNews(id) {
+                const { data: p } = await _supabase.from('posts').select('*').eq('id', id).single();
+                if (p) {
+                    document.getElementById('editing-news-id').value = p.id;
+                    document.getElementById('n-title').value = p.title;
+                    document.getElementById('n-slug').value = p.slug;
+                    document.getElementById('n-tags').value = (p.tags || []).join(', ');
+                    document.getElementById('n-image').value = p.image_url || '';
+                    document.getElementById('n-content').value = p.content;
 
-            // Formulaire de publication
-            document.getElementById('post-form').addEventListener('submit', async (e) => {
+                    document.getElementById('news-submit-btn').innerText = "Mettre_à_jour_Rapport";
+                    document.getElementById('news-form-status').innerText = "Mode: Édition_Rapport_Existant";
+                    document.getElementById('news-cancel-btn').classList.remove('hidden');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+
+            function resetNewsForm() {
+                document.getElementById('news-form').reset();
+                document.getElementById('editing-news-id').value = '';
+                document.getElementById('news-submit-btn').innerText = "Diffuser_News";
+                document.getElementById('news-form-status').innerText = "Mode: Nouveau_Rapport_Tactique";
+                document.getElementById('news-cancel-btn').classList.add('hidden');
+            }
+
+            // --- NEWS : ENVOI (INSERT ou UPDATE) ---
+            document.getElementById('news-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const pubBtn = document.getElementById('pub-btn');
-                pubBtn.disabled = true;
-                pubBtn.innerText = "TRANSMISSION_EN_COURS...";
-
-                const tagsArray = document.getElementById('tags').value.split(',').map(t => t.trim().toUpperCase());
+                const id = document.getElementById('editing-news-id').value;
+                const tags = document.getElementById('n-tags').value.split(',').map(t => t.trim().toUpperCase()).filter(t => t !== "");
                 
                 const payload = {
-                    title: document.getElementById('title').value,
-                    slug: document.getElementById('slug').value,
-                    content: document.getElementById('content').value,
-                    image_url: document.getElementById('image_url').value,
-                    tags: tagsArray
+                    title: document.getElementById('n-title').value,
+                    slug: document.getElementById('n-slug').value,
+                    image_url: document.getElementById('n-image').value,
+                    tags: tags,
+                    content: document.getElementById('n-content').value
                 };
 
-                const { error } = await _supabase.from('posts').insert([payload]);
-
-                if (error) {
-                    alert("ERREUR_SYSTÈME : " + error.message);
-                    pubBtn.disabled = false;
-                    pubBtn.innerText = "RÉESSAYER";
+                let res;
+                if (id) {
+                    res = await _supabase.from('posts').update(payload).eq('id', id);
                 } else {
-                    alert("RAPPORT PUBLIÉ AVEC SUCCÈS SUR LA DATABASE");
-                    document.getElementById('post-form').reset();
-                    pubBtn.disabled = false;
-                    pubBtn.innerText = "Diffuser sur gowrax.me";
+                    res = await _supabase.from('posts').insert([payload]);
+                }
+
+                if (res.error) alert(res.error.message);
+                else {
+                    alert(id ? "Rapport mis à jour !" : "Rapport diffusé sur gowrax.me !");
+                    resetNewsForm();
+                    loadNewsList();
                 }
             });
-        });
+
+            async function deleteNews(id) {
+                if (confirm("Supprimer ce rapport des archives ?")) {
+                    await _supabase.from('posts').delete().eq('id', id);
+                    loadNewsList();
+                }
+            }
+
+        document.addEventListener('DOMContentLoaded', checkSession);
     </script>
 </body>
 </html>
