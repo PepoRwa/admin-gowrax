@@ -40,6 +40,7 @@
         <nav class="space-y-4 flex-1">
             <div onclick="switchView('view-news')" class="nav-link p-3 text-xs uppercase tracking-widest active" id="link-news">// Gérer_News</div>
             <div onclick="switchView('view-members')" class="nav-link p-3 text-xs uppercase tracking-widest" id="link-members">// Gérer_Membres</div>
+            <div onclick="switchView('view-events')" class="nav-link p-3 text-xs uppercase tracking-widest" id="link-events">// Gérer_Calendrier</div>
         </nav>
         <button id="logout-button" class="text-[10px] text-gray-600 hover:text-white uppercase mt-auto">[ Déconnexion ]</button>
     </aside>
@@ -120,6 +121,68 @@
                 <div id="members-list" class="space-y-2"></div>
             </div>
         </section>
+
+        <section id="view-events" class="view-section">
+            <header class="mb-10">
+                <h3 class="text-xl font-bold uppercase italic tracking-tight text-magenta">Calendar_Module</h3>
+                <p id="event-form-status" class="text-[9px] text-gray-500 uppercase">Mode: Planification_Match</p>
+            </header>
+            
+            <form id="event-form" class="space-y-4 max-w-3xl">
+                <input type="hidden" id="editing-event-id" value="">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="e-game" placeholder="JEU (EX: VALORANT, CS2)" class="admin-input" required>
+                    <input type="text" id="e-tournament" placeholder="NOM DU TOURNOI" class="admin-input" required>
+                </div>
+
+                <div class="flex items-center gap-4 bg-[#0f101a] border border-magenta/20 p-3">
+                    <input type="checkbox" id="e-internal" class="w-4 h-4 accent-magenta">
+                    <label for="e-internal" class="text-xs text-magenta font-bold uppercase tracking-widest cursor-pointer">Cocher si Tournoi Interne</label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
+                    <input type="text" id="e-grx-name" placeholder="NOM GOWRAX (ex: GOWRAX 1)" class="admin-input" value="GOWRAX">
+                    <input type="text" id="e-opp-name" placeholder="NOM ADVERSAIRE" class="admin-input" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="number" id="e-grx-score" placeholder="SCORE GOWRAX (SI TERMINÉ)" class="admin-input">
+                    <input type="number" id="e-opp-score" placeholder="SCORE ADVERSAIRE (SI TERMINÉ)" class="admin-input">
+                </div>
+
+                <input type="text" id="e-grx-roster" placeholder="JOUEURS DÉPLOYÉS (Ex: P1, P2, P3...)" class="admin-input">
+                
+                <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
+                    <input type="datetime-local" id="e-date" class="admin-input" required>
+                    <select id="e-status" class="admin-input text-white">
+                        <option value="UPCOMING">STATUT: À VENIR</option>
+                        <option value="LIVE">STATUT: LIVE</option>
+                        <option value="FINISHED">STATUT: TERMINÉ</option>
+                        <option value="POSTPONED" class="text-yellow-500">STATUT: REPORTÉ</option>
+                        <option value="CANCELED" class="text-red-500">STATUT: ANNULÉ</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
+                    <input type="text" id="e-tier" placeholder="TYPE (Ex: VCT, OPEN TOUR...)" class="admin-input uppercase">
+                    <input type="url" id="e-tournament-logo" placeholder="URL LOGO TOURNOI (Optionnel)" class="admin-input">
+                    <input type="url" id="e-bracket" placeholder="LIEN TOORNAMENT / VLR.GG (Optionnel)" class="admin-input">
+                </div>
+
+                <input type="url" id="e-opp-logo" placeholder="URL LOGO ADVERSAIRE (Optionnel)" class="admin-input">
+                <input type="url" id="e-stream" placeholder="LIEN DU STREAM TWITCH (Optionnel)" class="admin-input">
+                
+                <div class="flex gap-4 mt-6">
+                    <button type="submit" id="event-submit-btn" class="btn-pub flex-1">Déployer_Match</button>
+                    <button type="button" id="event-cancel-btn" class="btn-cancel hidden" onclick="resetEventForm()">Annuler_Edition</button>
+                </div>
+            </form>
+
+            <div class="mt-20">
+                <h4 class="text-magenta text-[10px] uppercase tracking-widest mb-6 border-b border-magenta/20 pb-2">// HISTORIQUE_DES_DÉPLOIEMENTS</h4>
+                <div id="events-list" class="space-y-2"></div>
+            </div>
+        </section>
     </main>
 
     <script>
@@ -133,9 +196,9 @@
             document.getElementById(viewId).classList.add('active');
             document.getElementById('link-' + viewId.split('-')[1]).classList.add('active');
             
-            // On charge les listes selon l'onglet
             if(viewId === 'view-members') loadMembersList();
             if(viewId === 'view-news') loadNewsList();
+            if(viewId === 'view-events') loadEventsList(); // Ajout appel calendrier
         }
 
         async function checkSession() {
@@ -145,7 +208,8 @@
                 document.getElementById('sidebar').classList.remove('hidden');
                 document.getElementById('main-panel').classList.remove('hidden');
                 loadMembersList();
-                loadNewsList(); // Ajoute ça ici
+                loadNewsList();
+                loadEventsList(); // Ajout chargement initial
             }
         }
 
@@ -162,7 +226,7 @@
             location.reload();
         });
 
-        // MEMBRES : CHARGEMENT LISTE
+        // --- SECTION MEMBRES (Inchangée) ---
         async function loadMembersList() {
             const { data: members, error } = await _supabase.from('members').select('*').order('priority_level', { ascending: false });
             const list = document.getElementById('members-list');
@@ -183,7 +247,6 @@
             }
         }
 
-        // MEMBRES : REMPLIR POUR ÉDITION
         async function editMember(id) {
             const { data: m } = await _supabase.from('members').select('*').eq('id', id).single();
             if (m) {
@@ -219,7 +282,6 @@
             document.getElementById('cancel-btn').classList.add('hidden');
         }
 
-        // MEMBRES : ENVOI (INSERT ou UPDATE)
         document.getElementById('member-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('editing-id').value;
@@ -243,12 +305,7 @@
                 social_instagram: document.getElementById('m-instagram').value
             };
 
-            let res;
-            if (id) {
-                res = await _supabase.from('members').update(payload).eq('id', id);
-            } else {
-                res = await _supabase.from('members').insert([payload]);
-            }
+            let res = id ? await _supabase.from('members').update(payload).eq('id', id) : await _supabase.from('members').insert([payload]);
 
             if (res.error) alert(res.error.message);
             else {
@@ -264,88 +321,194 @@
                 loadMembersList();
             }
         }
-        // --- LOGIQUE NEWS : CHARGEMENT LISTE ---
-            async function loadNewsList() {
-                const { data: posts, error } = await _supabase.from('posts').select('id, title, slug').order('created_at', { ascending: false });
-                const list = document.getElementById('news-list');
-                list.innerHTML = '';
-                if (posts) {
-                    posts.forEach(p => {
-                        const div = document.createElement('div');
-                        div.className = "flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group";
-                        div.innerHTML = `
-                            <div class="cursor-pointer flex-1" onclick="editNews('${p.id}')">
-                                <span class="text-xs font-bold text-white group-hover:text-magenta">${p.title}</span>
-                                <span class="text-[9px] text-gray-500 ml-2 uppercase tracking-tighter italic">/${p.slug}</span>
-                            </div>
-                            <button onclick="deleteNews('${p.id}')" class="text-[8px] text-red-500 hover:text-white uppercase font-bold">[ Supprimer ]</button>
-                        `;
-                        list.appendChild(div);
-                    });
-                }
+
+        // --- SECTION NEWS (Inchangée) ---
+        async function loadNewsList() {
+            const { data: posts, error } = await _supabase.from('posts').select('id, title, slug').order('created_at', { ascending: false });
+            const list = document.getElementById('news-list');
+            list.innerHTML = '';
+            if (posts) {
+                posts.forEach(p => {
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group";
+                    div.innerHTML = `
+                        <div class="cursor-pointer flex-1" onclick="editNews('${p.id}')">
+                            <span class="text-xs font-bold text-white group-hover:text-magenta">${p.title}</span>
+                            <span class="text-[9px] text-gray-500 ml-2 uppercase tracking-tighter italic">/${p.slug}</span>
+                        </div>
+                        <button onclick="deleteNews('${p.id}')" class="text-[8px] text-red-500 hover:text-white uppercase font-bold">[ Supprimer ]</button>
+                    `;
+                    list.appendChild(div);
+                });
             }
+        }
 
-            // --- NEWS : REMPLIR POUR ÉDITION ---
-            async function editNews(id) {
-                const { data: p } = await _supabase.from('posts').select('*').eq('id', id).single();
-                if (p) {
-                    document.getElementById('editing-news-id').value = p.id;
-                    document.getElementById('n-title').value = p.title;
-                    document.getElementById('n-slug').value = p.slug;
-                    document.getElementById('n-tags').value = (p.tags || []).join(', ');
-                    document.getElementById('n-image').value = p.image_url || '';
-                    document.getElementById('n-content').value = p.content;
+        async function editNews(id) {
+            const { data: p } = await _supabase.from('posts').select('*').eq('id', id).single();
+            if (p) {
+                document.getElementById('editing-news-id').value = p.id;
+                document.getElementById('n-title').value = p.title;
+                document.getElementById('n-slug').value = p.slug;
+                document.getElementById('n-tags').value = (p.tags || []).join(', ');
+                document.getElementById('n-image').value = p.image_url || '';
+                document.getElementById('n-content').value = p.content;
 
-                    document.getElementById('news-submit-btn').innerText = "Mettre_à_jour_Rapport";
-                    document.getElementById('news-form-status').innerText = "Mode: Édition_Rapport_Existant";
-                    document.getElementById('news-cancel-btn').classList.remove('hidden');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
+                document.getElementById('news-submit-btn').innerText = "Mettre_à_jour_Rapport";
+                document.getElementById('news-form-status').innerText = "Mode: Édition_Rapport_Existant";
+                document.getElementById('news-cancel-btn').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
+        }
 
-            function resetNewsForm() {
-                document.getElementById('news-form').reset();
-                document.getElementById('editing-news-id').value = '';
-                document.getElementById('news-submit-btn').innerText = "Diffuser_News";
-                document.getElementById('news-form-status').innerText = "Mode: Nouveau_Rapport_Tactique";
-                document.getElementById('news-cancel-btn').classList.add('hidden');
+        function resetNewsForm() {
+            document.getElementById('news-form').reset();
+            document.getElementById('editing-news-id').value = '';
+            document.getElementById('news-submit-btn').innerText = "Diffuser_News";
+            document.getElementById('news-form-status').innerText = "Mode: Nouveau_Rapport_Tactique";
+            document.getElementById('news-cancel-btn').classList.add('hidden');
+        }
+
+        document.getElementById('news-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editing-news-id').value;
+            const tags = document.getElementById('n-tags').value.split(',').map(t => t.trim().toUpperCase()).filter(t => t !== "");
+            
+            const payload = {
+                title: document.getElementById('n-title').value,
+                slug: document.getElementById('n-slug').value,
+                image_url: document.getElementById('n-image').value,
+                tags: tags,
+                content: document.getElementById('n-content').value
+            };
+
+            let res = id ? await _supabase.from('posts').update(payload).eq('id', id) : await _supabase.from('posts').insert([payload]);
+
+            if (res.error) alert(res.error.message);
+            else {
+                alert(id ? "Rapport mis à jour !" : "Rapport diffusé sur gowrax.me !");
+                resetNewsForm();
+                loadNewsList();
             }
+        });
 
-            // --- NEWS : ENVOI (INSERT ou UPDATE) ---
-            document.getElementById('news-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const id = document.getElementById('editing-news-id').value;
-                const tags = document.getElementById('n-tags').value.split(',').map(t => t.trim().toUpperCase()).filter(t => t !== "");
-                
-                const payload = {
-                    title: document.getElementById('n-title').value,
-                    slug: document.getElementById('n-slug').value,
-                    image_url: document.getElementById('n-image').value,
-                    tags: tags,
-                    content: document.getElementById('n-content').value
-                };
-
-                let res;
-                if (id) {
-                    res = await _supabase.from('posts').update(payload).eq('id', id);
-                } else {
-                    res = await _supabase.from('posts').insert([payload]);
-                }
-
-                if (res.error) alert(res.error.message);
-                else {
-                    alert(id ? "Rapport mis à jour !" : "Rapport diffusé sur gowrax.me !");
-                    resetNewsForm();
-                    loadNewsList();
-                }
-            });
-
-            async function deleteNews(id) {
-                if (confirm("Supprimer ce rapport des archives ?")) {
-                    await _supabase.from('posts').delete().eq('id', id);
-                    loadNewsList();
-                }
+        async function deleteNews(id) {
+            if (confirm("Supprimer ce rapport des archives ?")) {
+                await _supabase.from('posts').delete().eq('id', id);
+                loadNewsList();
             }
+        }
+
+        // --- NOUVELLE SECTION : CALENDRIER ---
+        async function loadEventsList() {
+            const { data: events, error } = await _supabase.from('events').select('*').order('date', { ascending: false });
+            const list = document.getElementById('events-list');
+            list.innerHTML = '';
+            if (events) {
+                events.forEach(ev => {
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group";
+                    
+                    let statusColor = "text-gray-500";
+                    if(ev.status === "LIVE") statusColor = "text-green-500";
+                    if(ev.status === "CANCELED") statusColor = "text-red-500";
+                    if(ev.status === "POSTPONED") statusColor = "text-yellow-500";
+
+                    div.innerHTML = `
+                        <div class="cursor-pointer flex-1" onclick="editEvent('${ev.id}')">
+                            <span class="text-xs font-bold text-white group-hover:text-magenta">[${ev.game}] ${ev.team_grx_name} VS ${ev.opponent_name}</span>
+                            <span class="text-[9px] ${statusColor} ml-2 uppercase tracking-tighter italic">
+                                ${new Date(ev.date).toLocaleDateString('fr-FR')} - ${ev.status}
+                            </span>
+                        </div>
+                        <button onclick="deleteEvent('${ev.id}')" class="text-[8px] text-red-500 hover:text-white uppercase font-bold">[ Supprimer ]</button>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+        }
+
+        async function editEvent(id) {
+            const { data: ev } = await _supabase.from('events').select('*').eq('id', id).single();
+            if (ev) {
+                document.getElementById('editing-event-id').value = ev.id;
+                document.getElementById('e-game').value = ev.game;
+                document.getElementById('e-tournament').value = ev.tournament_name;
+                document.getElementById('e-internal').checked = ev.is_internal;
+                document.getElementById('e-grx-name').value = ev.team_grx_name || 'GOWRAX';
+                document.getElementById('e-grx-roster').value = ev.team_grx_roster || '';
+                document.getElementById('e-grx-score').value = ev.team_grx_score !== null ? ev.team_grx_score : '';
+                document.getElementById('e-opp-name').value = ev.opponent_name;
+                document.getElementById('e-opp-logo').value = ev.opponent_logo || '';
+                document.getElementById('e-opp-score').value = ev.opponent_score !== null ? ev.opponent_score : '';
+                document.getElementById('e-status').value = ev.status;
+                document.getElementById('e-stream').value = ev.stream_url || '';
+                document.getElementById('e-tier').value = ev.tournament_tier || 'COMMUNAUTAIRE';
+                document.getElementById('e-bracket').value = ev.bracket_url || '';
+
+                // Format datetime-local from Supabase timestamp
+                if (ev.date) {
+                    let d = new Date(ev.date);
+                    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                    document.getElementById('e-date').value = d.toISOString().slice(0, 16);
+                }
+
+                document.getElementById('event-submit-btn').innerText = "Mettre_à_jour_Match";
+                document.getElementById('event-form-status').innerText = "Mode: Édition_Match_Existant";
+                document.getElementById('event-cancel-btn').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function resetEventForm() {
+            document.getElementById('event-form').reset();
+            document.getElementById('editing-event-id').value = '';
+            document.getElementById('e-grx-name').value = 'GOWRAX';
+            document.getElementById('event-submit-btn').innerText = "Déployer_Match";
+            document.getElementById('event-form-status').innerText = "Mode: Planification_Match";
+            document.getElementById('event-cancel-btn').classList.add('hidden');
+        }
+
+        document.getElementById('event-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editing-event-id').value;
+            
+            const grxScoreRaw = document.getElementById('e-grx-score').value;
+            const oppScoreRaw = document.getElementById('e-opp-score').value;
+
+            const payload = {
+                game: document.getElementById('e-game').value,
+                tournament_name: document.getElementById('e-tournament').value,
+                is_internal: document.getElementById('e-internal').checked,
+                date: document.getElementById('e-date').value,
+                status: document.getElementById('e-status').value,
+                stream_url: document.getElementById('e-stream').value || null,
+                team_grx_name: document.getElementById('e-grx-name').value,
+                team_grx_roster: document.getElementById('e-grx-roster').value || null,
+                team_grx_score: grxScoreRaw !== '' ? parseInt(grxScoreRaw) : null,
+                opponent_name: document.getElementById('e-opp-name').value,
+                opponent_logo: document.getElementById('e-opp-logo').value || null,
+                opponent_score: oppScoreRaw !== '' ? parseInt(oppScoreRaw) : null,
+                tournament_tier: document.getElementById('e-tier').value || 'COMMUNAUTAIRE',
+                tournament_logo: document.getElementById('e-tournament-logo').value || null,
+                bracket_url: document.getElementById('e-bracket').value || null,
+            };
+
+            let res = id ? await _supabase.from('events').update(payload).eq('id', id) : await _supabase.from('events').insert([payload]);
+
+            if (res.error) alert(res.error.message);
+            else {
+                alert(id ? "Match mis à jour !" : "Nouveau match déployé !");
+                resetEventForm();
+                loadEventsList();
+            }
+        });
+
+        async function deleteEvent(id) {
+            if (confirm("Effacer ce rapport d'opération ?")) {
+                await _supabase.from('events').delete().eq('id', id);
+                loadEventsList();
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', checkSession);
     </script>
