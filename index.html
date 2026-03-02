@@ -38,6 +38,7 @@
             <span class="text-[8px] text-gray-600 uppercase tracking-widest">Protocol: Secure_Access</span>
         </div>
         <nav class="space-y-4 flex-1">
+            <div onclick="switchView('view-broadcast')" class="nav-link p-3 text-xs uppercase tracking-widest" id="link-broadcast">// Gérer_Broadcast</div>
             <div onclick="switchView('view-news')" class="nav-link p-3 text-xs uppercase tracking-widest active" id="link-news">// Gérer_News</div>
             <div onclick="switchView('view-members')" class="nav-link p-3 text-xs uppercase tracking-widest" id="link-members">// Gérer_Membres</div>
             <div onclick="switchView('view-events')" class="nav-link p-3 text-xs uppercase tracking-widest" id="link-events">// Gérer_Calendrier</div>
@@ -47,6 +48,49 @@
 
     <main id="main-panel" class="flex-1 p-8 md:p-12 hidden overflow-y-auto">
         
+        <section id="view-broadcast" class="view-section">
+            <header class="mb-10">
+                <h3 class="text-xl font-bold uppercase italic tracking-tight text-magenta">Broadcast_Module</h3>
+                <p id="broadcast-form-status" class="text-[9px] text-gray-500 uppercase">Mode: Création_Nouvelle_Alerte</p>
+            </header>
+            <form id="broadcast-form" class="space-y-4 max-w-3xl">
+                <input type="hidden" id="editing-broadcast-id" value="">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="b-tag" placeholder="VERSION TAG (Ex: v1-tournoi)" class="admin-input" required>
+                    <select id="b-status" class="admin-input font-bold">
+                        <option value="false" class="text-gray-500">DÉSACTIVÉ (Caché)</option>
+                        <option value="true" class="text-green-500">ACTIF (En ligne)</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="b-title" placeholder="TITRE (Ex: Mise à jour Système)" class="admin-input" required>
+                    <select id="b-target" class="admin-input">
+                        <option value="ALL">CIBLE: TOUTES LES PAGES</option>
+                        <option value="/contact/">CIBLE: PAGE CONTACT</option>
+                        <option value="/roster/">CIBLE: PAGES ROSTERS</option>
+                        <option value="/join/">CIBLE: RECRUTEMENT</option>
+                        <option value="/staff/">CIBLE: STAFF</option>
+                        <option value="/news/">CIBLE: NEWS</option>
+                        <option value="/events/">CIBLE: CALENDRIER</option>
+                    </select>
+                </div>
+                <p class="text-[10px] text-magenta mt-2">HTML simple supporté. Les sauts de ligne sont conservés.</p>
+                <textarea id="b-content" rows="6" placeholder="Message du pop-up..." class="admin-input" required></textarea>
+                <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
+                    <input type="text" id="b-btn-text" placeholder="TEXTE DU BOUTON (Optionnel)" class="admin-input">
+                    <input type="text" id="b-btn-link" placeholder="LIEN DU BOUTON (Optionnel)" class="admin-input">
+                </div>
+                <div class="flex gap-4 mt-6">
+                    <button type="submit" id="broadcast-submit-btn" class="btn-pub flex-1">Publier_Alerte</button>
+                    <button type="button" id="broadcast-cancel-btn" class="btn-cancel hidden" onclick="resetBroadcastForm()">Annuler</button>
+                </div>
+            </form>
+            <div class="mt-20">
+                <h4 class="text-magenta text-[10px] uppercase tracking-widest mb-6 border-b border-magenta/20 pb-2">// ALERTES_ENREGISTRÉES</h4>
+                <div id="broadcast-list" class="space-y-2"></div>
+            </div>
+        </section>
+
         <section id="view-news" class="view-section active">
             <header class="mb-10">
                 <h3 class="text-xl font-bold uppercase italic tracking-tight text-magenta">News_Module</h3>
@@ -61,13 +105,11 @@
                 </div>
                 <input type="url" id="n-image" placeholder="URL IMAGE BANNIÈRE" class="admin-input">
                 <textarea id="n-content" rows="10" placeholder="# CONTENU MARKDOWN..." class="admin-input font-mono text-xs" required></textarea>
-                
                 <div class="flex gap-4">
                     <button type="submit" id="news-submit-btn" class="btn-pub flex-1">Diffuser_News</button>
                     <button type="button" id="news-cancel-btn" class="btn-cancel hidden" onclick="resetNewsForm()">Annuler</button>
                 </div>
             </form>
-
             <div class="mt-20">
                 <h4 class="text-magenta text-[10px] uppercase tracking-widest mb-6 border-b border-magenta/20 pb-2">// ARCHIVES_DES_RAPPORTS</h4>
                 <div id="news-list" class="space-y-2"></div>
@@ -79,10 +121,8 @@
                 <h3 class="text-xl font-bold uppercase italic tracking-tight text-magenta">Personnel_Module</h3>
                 <p id="form-status" class="text-[9px] text-gray-500 uppercase">Mode: Création_Nouvel_Agent</p>
             </header>
-            
             <form id="member-form" class="space-y-4 max-w-3xl">
                 <input type="hidden" id="editing-id" value="">
-                
                 <div class="grid grid-cols-2 gap-4">
                     <input type="text" id="m-nickname" placeholder="PSEUDO" class="admin-input" required>
                     <input type="text" id="m-slug" placeholder="SLUG" class="admin-input" required>
@@ -109,13 +149,11 @@
                 <input type="url" id="m-tracker" placeholder="URL TRACKER.GG" class="admin-input">
                 <input type="text" id="m-quote" placeholder="CITATION D'HONNEUR" class="admin-input italic">
                 <textarea id="m-description" rows="5" placeholder="BIO..." class="admin-input text-xs"></textarea>
-                
                 <div class="flex gap-4">
                     <button type="submit" id="submit-btn" class="btn-pub flex-1">Enregistrer_Membre</button>
                     <button type="button" id="cancel-btn" class="btn-cancel hidden" onclick="resetForm()">Annuler_Edition</button>
                 </div>
             </form>
-
             <div class="mt-20">
                 <h4 class="text-magenta text-[10px] uppercase tracking-widest mb-6 border-b border-magenta/20 pb-2">// LISTE_DU_PERSONNEL</h4>
                 <div id="members-list" class="space-y-2"></div>
@@ -127,57 +165,48 @@
                 <h3 class="text-xl font-bold uppercase italic tracking-tight text-magenta">Calendar_Module</h3>
                 <p id="event-form-status" class="text-[9px] text-gray-500 uppercase">Mode: Planification_Match</p>
             </header>
-            
             <form id="event-form" class="space-y-4 max-w-3xl">
                 <input type="hidden" id="editing-event-id" value="">
-                
                 <div class="grid grid-cols-2 gap-4">
                     <input type="text" id="e-game" placeholder="JEU (EX: VALORANT, CS2)" class="admin-input" required>
                     <input type="text" id="e-tournament" placeholder="NOM DU TOURNOI" class="admin-input" required>
                 </div>
-
                 <div class="flex items-center gap-4 bg-[#0f101a] border border-magenta/20 p-3">
                     <input type="checkbox" id="e-internal" class="w-4 h-4 accent-magenta">
                     <label for="e-internal" class="text-xs text-magenta font-bold uppercase tracking-widest cursor-pointer">Cocher si Tournoi Interne</label>
                 </div>
-
                 <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
-                    <input type="text" id="e-grx-name" placeholder="NOM GOWRAX (ex: GOWRAX 1)" class="admin-input" value="GOWRAX">
+                    <input type="text" id="e-grx-name" placeholder="NOM GOWRAX" class="admin-input" value="GOWRAX">
                     <input type="text" id="e-opp-name" placeholder="NOM ADVERSAIRE" class="admin-input" required>
                 </div>
-
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="number" id="e-grx-score" placeholder="SCORE GOWRAX (SI TERMINÉ)" class="admin-input">
-                    <input type="number" id="e-opp-score" placeholder="SCORE ADVERSAIRE (SI TERMINÉ)" class="admin-input">
+                    <input type="number" id="e-grx-score" placeholder="SCORE GOWRAX" class="admin-input">
+                    <input type="number" id="e-opp-score" placeholder="SCORE ADVERSAIRE" class="admin-input">
                 </div>
-
-                <input type="text" id="e-grx-roster" placeholder="JOUEURS DÉPLOYÉS (Ex: P1, P2, P3...)" class="admin-input">
-                
+                <input type="text" id="e-grx-roster" placeholder="JOUEURS DÉPLOYÉS" class="admin-input">
                 <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
                     <input type="datetime-local" id="e-date" class="admin-input" required>
                     <select id="e-status" class="admin-input text-white">
                         <option value="UPCOMING">STATUT: À VENIR</option>
                         <option value="LIVE">STATUT: LIVE</option>
                         <option value="FINISHED">STATUT: TERMINÉ</option>
-                        <option value="POSTPONED" class="text-yellow-500">STATUT: REPORTÉ</option>
-                        <option value="CANCELED" class="text-red-500">STATUT: ANNULÉ</option>
+                        <option value="POSTPONED">STATUT: REPORTÉ</option>
+                        <option value="CANCELED">STATUT: ANNULÉ</option>
                     </select>
                 </div>
-                <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
-                    <input type="text" id="e-tier" placeholder="TYPE (Ex: VCT, OPEN TOUR...)" class="admin-input uppercase">
-                    <input type="url" id="e-tournament-logo" placeholder="URL LOGO TOURNOI (Optionnel)" class="admin-input">
-                    <input type="url" id="e-bracket" placeholder="LIEN TOORNAMENT / VLR.GG (Optionnel)" class="admin-input">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="e-tier" placeholder="TYPE (Ex: VCT)" class="admin-input uppercase">
+                    <input type="url" id="e-tournament-logo" placeholder="URL LOGO TOURNOI" class="admin-input">
                 </div>
-
-                <input type="url" id="e-opp-logo" placeholder="URL LOGO ADVERSAIRE (Optionnel)" class="admin-input">
-                <input type="url" id="e-stream" placeholder="LIEN DU STREAM TWITCH (Optionnel)" class="admin-input">
-                
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="url" id="e-opp-logo" placeholder="URL LOGO ADVERSAIRE" class="admin-input">
+                    <input type="url" id="e-stream" placeholder="URL STREAM" class="admin-input">
+                </div>
                 <div class="flex gap-4 mt-6">
                     <button type="submit" id="event-submit-btn" class="btn-pub flex-1">Déployer_Match</button>
-                    <button type="button" id="event-cancel-btn" class="btn-cancel hidden" onclick="resetEventForm()">Annuler_Edition</button>
+                    <button type="button" id="event-cancel-btn" class="btn-cancel hidden" onclick="resetEventForm()">Annuler</button>
                 </div>
             </form>
-
             <div class="mt-20">
                 <h4 class="text-magenta text-[10px] uppercase tracking-widest mb-6 border-b border-magenta/20 pb-2">// HISTORIQUE_DES_DÉPLOIEMENTS</h4>
                 <div id="events-list" class="space-y-2"></div>
@@ -198,7 +227,8 @@
             
             if(viewId === 'view-members') loadMembersList();
             if(viewId === 'view-news') loadNewsList();
-            if(viewId === 'view-events') loadEventsList(); // Ajout appel calendrier
+            if(viewId === 'view-events') loadEventsList();
+            if(viewId === 'view-broadcast') loadBroadcastList();
         }
 
         async function checkSession() {
@@ -207,9 +237,7 @@
                 document.getElementById('login-zone').style.display = 'none';
                 document.getElementById('sidebar').classList.remove('hidden');
                 document.getElementById('main-panel').classList.remove('hidden');
-                loadMembersList();
                 loadNewsList();
-                loadEventsList(); // Ajout chargement initial
             }
         }
 
@@ -226,22 +254,136 @@
             location.reload();
         });
 
-        // --- SECTION MEMBRES (Inchangée) ---
+        // ================= MODULE BROADCAST =================
+        async function loadBroadcastList() {
+            const { data: notifs } = await _supabase.from('notifications').select('*').order('created_at', { ascending: false });
+            const list = document.getElementById('broadcast-list');
+            list.innerHTML = '';
+            if (notifs) {
+                notifs.forEach(n => {
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group";
+                    const statusColor = n.is_active ? "text-green-500" : "text-gray-600";
+                    div.innerHTML = `
+                        <div class="cursor-pointer flex-1" onclick="editBroadcast('${n.id}')">
+                            <span class="text-xs font-bold text-white group-hover:text-magenta">${n.title}</span>
+                            <span class="text-[9px] ${statusColor} ml-2 font-bold uppercase">[${n.is_active ? 'ACTIF' : 'INACTIF'}]</span>
+                            <span class="text-[9px] text-gray-500 ml-2 font-mono">TAG: ${n.version_tag}</span>
+                        </div>
+                        <button onclick="deleteBroadcast('${n.id}')" class="text-[8px] text-red-500 hover:text-white uppercase font-bold">[ Supprimer ]</button>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+        }
+
+        async function editBroadcast(id) {
+            const { data: n } = await _supabase.from('notifications').select('*').eq('id', id).single();
+            if (n) {
+                document.getElementById('editing-broadcast-id').value = n.id;
+                document.getElementById('b-tag').value = n.version_tag;
+                document.getElementById('b-status').value = n.is_active.toString();
+                document.getElementById('b-title').value = n.title;
+                document.getElementById('b-target').value = n.target_page;
+                document.getElementById('b-content').value = n.content;
+                document.getElementById('b-btn-text').value = n.button_text || '';
+                document.getElementById('b-btn-link').value = n.button_link || '';
+                document.getElementById('broadcast-submit-btn').innerText = "Mettre_à_jour_Alerte";
+                document.getElementById('broadcast-cancel-btn').classList.remove('hidden');
+            }
+        }
+
+        function resetBroadcastForm() {
+            document.getElementById('broadcast-form').reset();
+            document.getElementById('editing-broadcast-id').value = '';
+            document.getElementById('broadcast-submit-btn').innerText = "Publier_Alerte";
+            document.getElementById('broadcast-cancel-btn').classList.add('hidden');
+        }
+
+        document.getElementById('broadcast-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editing-broadcast-id').value;
+            const isActive = document.getElementById('b-status').value === "true";
+            if (isActive) await _supabase.from('notifications').update({ is_active: false }).neq('id', '00000000-0000-0000-0000-000000000000');
+            const payload = {
+                version_tag: document.getElementById('b-tag').value,
+                is_active: isActive,
+                title: document.getElementById('b-title').value,
+                target_page: document.getElementById('b-target').value,
+                content: document.getElementById('b-content').value,
+                button_text: document.getElementById('b-btn-text').value || null,
+                button_link: document.getElementById('b-btn-link').value || null,
+            };
+            const res = id ? await _supabase.from('notifications').update(payload).eq('id', id) : await _supabase.from('notifications').insert([payload]);
+            if (res.error) alert(res.error.message); else { resetBroadcastForm(); loadBroadcastList(); }
+        });
+
+        async function deleteBroadcast(id) {
+            if (confirm("Supprimer l'alerte ?")) { await _supabase.from('notifications').delete().eq('id', id); loadBroadcastList(); }
+        }
+
+        // ================= MODULE NEWS =================
+        async function loadNewsList() {
+            const { data: posts } = await _supabase.from('posts').select('id, title, slug').order('created_at', { ascending: false });
+            const list = document.getElementById('news-list');
+            list.innerHTML = '';
+            if (posts) {
+                posts.forEach(p => {
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group";
+                    div.innerHTML = `<div class="cursor-pointer flex-1" onclick="editNews('${p.id}')"><span class="text-xs font-bold text-white group-hover:text-magenta">${p.title}</span></div><button onclick="deleteNews('${p.id}')" class="text-[8px] text-red-500 font-bold uppercase">[ Supprimer ]</button>`;
+                    list.appendChild(div);
+                });
+            }
+        }
+
+        async function editNews(id) {
+            const { data: p } = await _supabase.from('posts').select('*').eq('id', id).single();
+            if (p) {
+                document.getElementById('editing-news-id').value = p.id;
+                document.getElementById('n-title').value = p.title;
+                document.getElementById('n-slug').value = p.slug;
+                document.getElementById('n-tags').value = (p.tags || []).join(', ');
+                document.getElementById('n-image').value = p.image_url || '';
+                document.getElementById('n-content').value = p.content;
+                document.getElementById('news-submit-btn').innerText = "Mettre_à_jour_Rapport";
+                document.getElementById('news-cancel-btn').classList.remove('hidden');
+            }
+        }
+
+        function resetNewsForm() {
+            document.getElementById('news-form').reset();
+            document.getElementById('editing-news-id').value = '';
+            document.getElementById('news-submit-btn').innerText = "Diffuser_News";
+            document.getElementById('news-cancel-btn').classList.add('hidden');
+        }
+
+        document.getElementById('news-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editing-news-id').value;
+            const payload = {
+                title: document.getElementById('n-title').value,
+                slug: document.getElementById('n-slug').value,
+                image_url: document.getElementById('n-image').value,
+                tags: document.getElementById('n-tags').value.split(',').map(t => t.trim().toUpperCase()),
+                content: document.getElementById('n-content').value
+            };
+            const res = id ? await _supabase.from('posts').update(payload).eq('id', id) : await _supabase.from('posts').insert([payload]);
+            if (res.error) alert(res.error.message); else { resetNewsForm(); loadNewsList(); }
+        });
+
+        async function deleteNews(id) { if (confirm("Supprimer news ?")) { await _supabase.from('posts').delete().eq('id', id); loadNewsList(); } }
+
+        // ================= MODULE MEMBRES =================
         async function loadMembersList() {
-            const { data: members, error } = await _supabase.from('members').select('*').order('priority_level', { ascending: false });
+            const { data: members } = await _supabase.from('members').select('*').order('priority_level', { ascending: false });
             const list = document.getElementById('members-list');
             list.innerHTML = '';
             if (members) {
                 members.forEach(m => {
                     const div = document.createElement('div');
                     div.className = "flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group";
-                    div.innerHTML = `
-                        <div class="cursor-pointer flex-1" onclick="editMember('${m.id}')">
-                            <span class="text-xs font-bold text-white group-hover:text-magenta">${m.nickname}</span>
-                            <span class="text-[9px] text-gray-500 ml-2 uppercase tracking-tighter">${m.main_role}</span>
-                        </div>
-                        <button onclick="deleteMember('${m.id}')" class="text-[8px] text-red-500 hover:text-white uppercase font-bold">[ Supprimer ]</button>
-                    `;
+                    div.innerHTML = `<div class="cursor-pointer flex-1" onclick="editMember('${m.id}')"><span class="text-xs font-bold text-white group-hover:text-magenta">${m.nickname}</span></div><button onclick="deleteMember('${m.id}')" class="text-[8px] text-red-500 font-bold uppercase">[ Supprimer ]</button>`;
                     list.appendChild(div);
                 });
             }
@@ -266,11 +408,8 @@
                 document.getElementById('m-tracker').value = m.tracker_url || '';
                 document.getElementById('m-quote').value = m.quote || '';
                 document.getElementById('m-description').value = m.description || '';
-
                 document.getElementById('submit-btn').innerText = "Mettre_à_jour_Agent";
-                document.getElementById('form-status').innerText = "Mode: Édition_Agent_Existant";
                 document.getElementById('cancel-btn').classList.remove('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
@@ -278,15 +417,12 @@
             document.getElementById('member-form').reset();
             document.getElementById('editing-id').value = '';
             document.getElementById('submit-btn').innerText = "Enregistrer_Membre";
-            document.getElementById('form-status').innerText = "Mode: Création_Nouvel_Agent";
             document.getElementById('cancel-btn').classList.add('hidden');
         }
 
         document.getElementById('member-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('editing-id').value;
-            const roles = document.getElementById('m-additional').value.split(',').map(t => t.trim()).filter(t => t !== "");
-            
             const payload = {
                 nickname: document.getElementById('m-nickname').value,
                 slug: document.getElementById('m-slug').value,
@@ -299,129 +435,27 @@
                 tracker_url: document.getElementById('m-tracker').value,
                 quote: document.getElementById('m-quote').value,
                 description: document.getElementById('m-description').value,
-                additional_roles: roles,
+                additional_roles: document.getElementById('m-additional').value.split(',').map(t => t.trim()),
                 social_twitch: document.getElementById('m-twitch').value,
                 social_twitter: document.getElementById('m-twitter').value,
                 social_instagram: document.getElementById('m-instagram').value
             };
-
-            let res = id ? await _supabase.from('members').update(payload).eq('id', id) : await _supabase.from('members').insert([payload]);
-
-            if (res.error) alert(res.error.message);
-            else {
-                alert(id ? "Mise à jour réussie" : "Nouvel agent créé");
-                resetForm();
-                loadMembersList();
-            }
+            const res = id ? await _supabase.from('members').update(payload).eq('id', id) : await _supabase.from('members').insert([payload]);
+            if (res.error) alert(res.error.message); else { resetForm(); loadMembersList(); }
         });
 
-        async function deleteMember(id) {
-            if (confirm("Supprimer définitivement cet agent ?")) {
-                await _supabase.from('members').delete().eq('id', id);
-                loadMembersList();
-            }
-        }
+        async function deleteMember(id) { if (confirm("Supprimer membre ?")) { await _supabase.from('members').delete().eq('id', id); loadMembersList(); } }
 
-        // --- SECTION NEWS (Inchangée) ---
-        async function loadNewsList() {
-            const { data: posts, error } = await _supabase.from('posts').select('id, title, slug').order('created_at', { ascending: false });
-            const list = document.getElementById('news-list');
-            list.innerHTML = '';
-            if (posts) {
-                posts.forEach(p => {
-                    const div = document.createElement('div');
-                    div.className = "flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group";
-                    div.innerHTML = `
-                        <div class="cursor-pointer flex-1" onclick="editNews('${p.id}')">
-                            <span class="text-xs font-bold text-white group-hover:text-magenta">${p.title}</span>
-                            <span class="text-[9px] text-gray-500 ml-2 uppercase tracking-tighter italic">/${p.slug}</span>
-                        </div>
-                        <button onclick="deleteNews('${p.id}')" class="text-[8px] text-red-500 hover:text-white uppercase font-bold">[ Supprimer ]</button>
-                    `;
-                    list.appendChild(div);
-                });
-            }
-        }
-
-        async function editNews(id) {
-            const { data: p } = await _supabase.from('posts').select('*').eq('id', id).single();
-            if (p) {
-                document.getElementById('editing-news-id').value = p.id;
-                document.getElementById('n-title').value = p.title;
-                document.getElementById('n-slug').value = p.slug;
-                document.getElementById('n-tags').value = (p.tags || []).join(', ');
-                document.getElementById('n-image').value = p.image_url || '';
-                document.getElementById('n-content').value = p.content;
-
-                document.getElementById('news-submit-btn').innerText = "Mettre_à_jour_Rapport";
-                document.getElementById('news-form-status').innerText = "Mode: Édition_Rapport_Existant";
-                document.getElementById('news-cancel-btn').classList.remove('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
-
-        function resetNewsForm() {
-            document.getElementById('news-form').reset();
-            document.getElementById('editing-news-id').value = '';
-            document.getElementById('news-submit-btn').innerText = "Diffuser_News";
-            document.getElementById('news-form-status').innerText = "Mode: Nouveau_Rapport_Tactique";
-            document.getElementById('news-cancel-btn').classList.add('hidden');
-        }
-
-        document.getElementById('news-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('editing-news-id').value;
-            const tags = document.getElementById('n-tags').value.split(',').map(t => t.trim().toUpperCase()).filter(t => t !== "");
-            
-            const payload = {
-                title: document.getElementById('n-title').value,
-                slug: document.getElementById('n-slug').value,
-                image_url: document.getElementById('n-image').value,
-                tags: tags,
-                content: document.getElementById('n-content').value
-            };
-
-            let res = id ? await _supabase.from('posts').update(payload).eq('id', id) : await _supabase.from('posts').insert([payload]);
-
-            if (res.error) alert(res.error.message);
-            else {
-                alert(id ? "Rapport mis à jour !" : "Rapport diffusé sur gowrax.me !");
-                resetNewsForm();
-                loadNewsList();
-            }
-        });
-
-        async function deleteNews(id) {
-            if (confirm("Supprimer ce rapport des archives ?")) {
-                await _supabase.from('posts').delete().eq('id', id);
-                loadNewsList();
-            }
-        }
-
-        // --- NOUVELLE SECTION : CALENDRIER ---
+        // ================= MODULE CALENDRIER =================
         async function loadEventsList() {
-            const { data: events, error } = await _supabase.from('events').select('*').order('date', { ascending: false });
+            const { data: events } = await _supabase.from('events').select('*').order('date', { ascending: false });
             const list = document.getElementById('events-list');
             list.innerHTML = '';
             if (events) {
                 events.forEach(ev => {
                     const div = document.createElement('div');
                     div.className = "flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group";
-                    
-                    let statusColor = "text-gray-500";
-                    if(ev.status === "LIVE") statusColor = "text-green-500";
-                    if(ev.status === "CANCELED") statusColor = "text-red-500";
-                    if(ev.status === "POSTPONED") statusColor = "text-yellow-500";
-
-                    div.innerHTML = `
-                        <div class="cursor-pointer flex-1" onclick="editEvent('${ev.id}')">
-                            <span class="text-xs font-bold text-white group-hover:text-magenta">[${ev.game}] ${ev.team_grx_name} VS ${ev.opponent_name}</span>
-                            <span class="text-[9px] ${statusColor} ml-2 uppercase tracking-tighter italic">
-                                ${new Date(ev.date).toLocaleDateString('fr-FR')} - ${ev.status}
-                            </span>
-                        </div>
-                        <button onclick="deleteEvent('${ev.id}')" class="text-[8px] text-red-500 hover:text-white uppercase font-bold">[ Supprimer ]</button>
-                    `;
+                    div.innerHTML = `<div class="cursor-pointer flex-1" onclick="editEvent('${ev.id}')"><span class="text-xs font-bold text-white group-hover:text-magenta">${ev.team_grx_name} VS ${ev.opponent_name}</span></div><button onclick="deleteEvent('${ev.id}')" class="text-[8px] text-red-500 font-bold uppercase">[ Supprimer ]</button>`;
                     list.appendChild(div);
                 });
             }
@@ -434,81 +468,45 @@
                 document.getElementById('e-game').value = ev.game;
                 document.getElementById('e-tournament').value = ev.tournament_name;
                 document.getElementById('e-internal').checked = ev.is_internal;
-                document.getElementById('e-grx-name').value = ev.team_grx_name || 'GOWRAX';
-                document.getElementById('e-grx-roster').value = ev.team_grx_roster || '';
-                document.getElementById('e-grx-score').value = ev.team_grx_score !== null ? ev.team_grx_score : '';
+                document.getElementById('e-grx-name').value = ev.team_grx_name;
                 document.getElementById('e-opp-name').value = ev.opponent_name;
-                document.getElementById('e-opp-logo').value = ev.opponent_logo || '';
-                document.getElementById('e-opp-score').value = ev.opponent_score !== null ? ev.opponent_score : '';
+                document.getElementById('e-grx-score').value = ev.team_grx_score || '';
+                document.getElementById('e-opp-score').value = ev.opponent_score || '';
                 document.getElementById('e-status').value = ev.status;
-                document.getElementById('e-stream').value = ev.stream_url || '';
-                document.getElementById('e-tier').value = ev.tournament_tier || 'COMMUNAUTAIRE';
-                document.getElementById('e-bracket').value = ev.bracket_url || '';
-
-                // Format datetime-local from Supabase timestamp
-                if (ev.date) {
-                    let d = new Date(ev.date);
-                    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-                    document.getElementById('e-date').value = d.toISOString().slice(0, 16);
-                }
-
+                document.getElementById('e-tier').value = ev.tournament_tier;
+                document.getElementById('e-date').value = new Date(ev.date).toISOString().slice(0, 16);
                 document.getElementById('event-submit-btn').innerText = "Mettre_à_jour_Match";
-                document.getElementById('event-form-status').innerText = "Mode: Édition_Match_Existant";
                 document.getElementById('event-cancel-btn').classList.remove('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
         function resetEventForm() {
             document.getElementById('event-form').reset();
             document.getElementById('editing-event-id').value = '';
-            document.getElementById('e-grx-name').value = 'GOWRAX';
             document.getElementById('event-submit-btn').innerText = "Déployer_Match";
-            document.getElementById('event-form-status').innerText = "Mode: Planification_Match";
             document.getElementById('event-cancel-btn').classList.add('hidden');
         }
 
         document.getElementById('event-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('editing-event-id').value;
-            
-            const grxScoreRaw = document.getElementById('e-grx-score').value;
-            const oppScoreRaw = document.getElementById('e-opp-score').value;
-
             const payload = {
                 game: document.getElementById('e-game').value,
                 tournament_name: document.getElementById('e-tournament').value,
                 is_internal: document.getElementById('e-internal').checked,
-                date: document.getElementById('e-date').value,
-                status: document.getElementById('e-status').value,
-                stream_url: document.getElementById('e-stream').value || null,
                 team_grx_name: document.getElementById('e-grx-name').value,
-                team_grx_roster: document.getElementById('e-grx-roster').value || null,
-                team_grx_score: grxScoreRaw !== '' ? parseInt(grxScoreRaw) : null,
                 opponent_name: document.getElementById('e-opp-name').value,
-                opponent_logo: document.getElementById('e-opp-logo').value || null,
-                opponent_score: oppScoreRaw !== '' ? parseInt(oppScoreRaw) : null,
-                tournament_tier: document.getElementById('e-tier').value || 'COMMUNAUTAIRE',
-                tournament_logo: document.getElementById('e-tournament-logo').value || null,
-                bracket_url: document.getElementById('e-bracket').value || null,
+                team_grx_score: document.getElementById('e-grx-score').value ? parseInt(document.getElementById('e-grx-score').value) : null,
+                opponent_score: document.getElementById('e-opp-score').value ? parseInt(document.getElementById('e-opp-score').value) : null,
+                status: document.getElementById('e-status').value,
+                date: document.getElementById('e-date').value,
+                tournament_tier: document.getElementById('e-tier').value
             };
-
-            let res = id ? await _supabase.from('events').update(payload).eq('id', id) : await _supabase.from('events').insert([payload]);
-
-            if (res.error) alert(res.error.message);
-            else {
-                alert(id ? "Match mis à jour !" : "Nouveau match déployé !");
-                resetEventForm();
-                loadEventsList();
-            }
+            const res = id ? await _supabase.from('events').update(payload).eq('id', id) : await _supabase.from('events').insert([payload]);
+            if (res.error) alert(res.error.message); else { resetEventForm(); loadEventsList(); }
         });
 
-        async function deleteEvent(id) {
-            if (confirm("Effacer ce rapport d'opération ?")) {
-                await _supabase.from('events').delete().eq('id', id);
-                loadEventsList();
-            }
-        }
+        async function deleteEvent(id) { if (confirm("Effacer match ?")) { await _supabase.from('events').delete().eq('id', id); loadEventsList(); } }
 
         document.addEventListener('DOMContentLoaded', checkSession);
     </script>
