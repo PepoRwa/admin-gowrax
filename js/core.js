@@ -101,6 +101,7 @@ window.Core = class Core {
             'module-news.js',
             'module-members.js',
             'module-events.js',
+            'module-tournaments.js',
             'module-partners.js'
         ];
 
