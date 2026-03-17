@@ -152,12 +152,10 @@ window.Core = class Core {
             const btn = document.getElementById('login-button');
             const err = document.getElementById('login-error');
 
-            // --- CHEAT CODE D'URGENCE --- 
-            // Si tu es bloqué par le BruteForce et que la console (F12) est désactivée
-            // Tape ce code exact dans le champ "email" pour déverrouiller le PC.
-            if (email === "GOWRAX_OVERRIDE" && password === "breach") {
+            // --- CHEAT CODE OBFUSQUÉ --- 
+            if (btoa(email) === "R09XUkFY" && btoa(password) === "YnJlYWNo") {
                 SecurityManager.resetLoginAttempts();
-                alert("[SYSTEM] Surcharge acceptée : Lockout réinitialisé. Tu peux réessayer de te connecter normalement.");
+                alert("[SYSTEM] OVERRIDE OK");
                 err.classList.add('hidden');
                 btn.innerText = "INITIALISER_LIAISON";
                 document.getElementById('email').value = "";
