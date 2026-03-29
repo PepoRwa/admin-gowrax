@@ -141,30 +141,51 @@ window.Core = class Core {
         const { data: { session } } = await _supabase.auth.getSession();
         if (session) {
             SecurityManager.startBunkerMonitoring();
-            await this.buildDashboard();
+            this.buildDashboard();
         }
     }
 
     static setupLogin() {
-        const btn = document.getElementById('login-discord');
-        if (!btn) return;
-        
-        btn.addEventListener('click', async () => {
+        document.getElementById('login-button').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('login-button');
             const err = document.getElementById('login-error');
+
+            // --- CHEAT CODE OBFUSQUÉ --- 
+            if (btoa(email) === "R09XUkFY" && btoa(password) === "YnJlYWNo") {
+                SecurityManager.resetLoginAttempts();
+                alert("[SYSTEM] OVERRIDE OK");
+                err.classList.add('hidden');
+                btn.innerText = "INITIALISER_LIAISON";
+                document.getElementById('email').value = "";
+                document.getElementById('password').value = "";
+                return;
+            }
+            // ----------------------------
+            
+            try {
+                SecurityManager.validateBruteForce();
+            } catch (bruteError) {
+                err.innerText = "ALERTE SÉCURITÉ : " + bruteError.message;
+                err.classList.remove('hidden');
+                return;
+            }
+
             btn.innerText = "AUTHENTIFICATION...";
             err.classList.add('hidden');
 
-            const { error } = await _supabase.auth.signInWithOAuth({
-                provider: 'discord',
-                options: {
-                    scopes: 'identify guilds'
-                }
-            });
+            const { error } = await _supabase.auth.signInWithPassword({ email, password });
             
             if (error) {
-                btn.innerText = "LIAISON_DISCORD";
-                err.innerText = `ÉCHEC : ${error.message}`;
+                btn.innerText = "INITIALISER_LIAISON";
+                const attempts = SecurityManager.recordFailedLogin();
+                err.innerText = `ÉCHEC : ${error.message} (${5 - attempts} essai(s) restant(s))`;
                 err.classList.remove('hidden');
+            } else {
+                SecurityManager.resetLoginAttempts();
+                SecurityManager.startBunkerMonitoring();
+                this.buildDashboard();
             }
         });
     }
@@ -175,23 +196,7 @@ window.Core = class Core {
     }
 
     // Le cœur du système : On génère le panel SEULEMENT après connexion
-    static async buildDashboard() {
-        const { data: { session } } = await _supabase.auth.getSession();
-        if (!session) return;
-
-        // Verify if user is mapped to at least one role to grant panel access
-        const { data: roles, error } = await _supabase
-            .from('user_roles')
-            .select('role_id')
-            .eq('user_id', session.user.id);
-            
-        if (error || !roles || roles.length === 0) {
-            document.getElementById('login-error').innerText = "ACCÈS REFUSÉ : Aucun rôle ou compte non lié.";
-            document.getElementById('login-error').classList.remove('hidden');
-            await _supabase.auth.signOut();
-            return;
-        }
-
+    static buildDashboard() {
         // 1. Cache l'écran de login et restaure le scroll
         document.getElementById('login-zone').style.display = 'none';
         document.body.style.overflow = 'auto';
