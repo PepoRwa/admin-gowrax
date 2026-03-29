@@ -223,7 +223,8 @@ window.Core = class Core {
             'module-members.js',
             'module-events.js',
             'module-tournaments.js',
-            'module-partners.js'
+            'module-partners.js',
+            'module-storage.js'
         ];
 
         for (const mod of modules) {
