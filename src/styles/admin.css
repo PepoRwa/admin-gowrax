@@ -131,8 +131,17 @@
     animation: fadeInZen 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  /* Great Vibes — needs air; never overflow:hidden on ancestors */
+  .title-zone {
+    @apply overflow-visible py-3;
+  }
+
   .title-calligraphic {
     @apply font-display font-normal;
+    display: block;
+    overflow: visible;
+    line-height: 1.55;
+    padding: 0.3em 0.2em 0.45em;
     background: linear-gradient(
       135deg,
       var(--color-lavender) 0%,
@@ -142,6 +151,7 @@
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    paint-order: stroke fill;
   }
 
   .sea-reflections {
