@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * GOWRAX Admin — tokens alignés sur PepoRwa.github.io (tokens.css + dark)
+ */
+:root {
+  --color-lavender: #c4b5fd;
+  --color-lavender-dark: #7c6bc4;
+  --color-mint: #a7f3d0;
+  --color-mint-dark: #34d399;
+  --color-cream: #fffbeb;
+  --color-rose: #fbcfe8;
+  --color-rose-dark: #be185d;
+  --color-gold: #fde68a;
+  --color-gold-dark: #d97706;
+  --color-sky: #bae6fd;
+  --color-coral: #fecaca;
+
+  --bg: #1c1917;
+  --bg-elevated: #292524;
+  --text: #f3f4f6;
+  --text-muted: #a8a29e;
+  --accent: var(--color-lavender);
+  --accent-soft: rgba(124, 107, 196, 0.2);
+  --border: rgba(196, 181, 253, 0.2);
+  --shadow: rgba(0, 0, 0, 0.35);
+  --blob-lavender: rgba(196, 181, 253, 0.14);
+  --blob-mint: rgba(52, 211, 153, 0.1);
+  --blob-rose: rgba(251, 207, 232, 0.1);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply min-h-screen font-sans antialiased;
+    color: var(--text);
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(ellipse 80% 60% at 10% 0%, var(--blob-lavender), transparent 55%),
+      radial-gradient(ellipse 70% 50% at 90% 10%, var(--blob-mint), transparent 50%),
+      radial-gradient(ellipse 60% 45% at 50% 100%, var(--blob-rose), transparent 55%);
+    background-attachment: fixed;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background: rgba(196, 181, 253, 0.45);
+    color: var(--text);
+  }
+}
+
+@layer components {
+  .glass-panel {
+    background: color-mix(in srgb, var(--bg-elevated) 82%, transparent);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 40px var(--shadow);
+  }
+
+  .admin-input {
+    @apply w-full rounded-xl px-4 py-3.5 font-mono text-sm outline-none transition;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .admin-input:focus {
+    border-color: var(--color-lavender);
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 3px rgba(196, 181, 253, 0.15);
+  }
+
+  .admin-input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+  }
+
+  .btn-pub {
+    @apply cursor-pointer rounded-xl px-4 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider transition;
+    color: #fff;
+    background: linear-gradient(135deg, var(--color-lavender-dark), var(--color-lavender));
+    border: 1px solid transparent;
+    box-shadow: 0 4px 14px var(--shadow);
+  }
+
+  .btn-pub:hover {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+  }
+
+  .btn-cancel {
+    @apply rounded-xl border px-4 py-3.5 font-heading text-sm font-medium transition;
+    border-color: var(--border);
+    color: var(--text-muted);
+    background: var(--bg-elevated);
+  }
+
+  .btn-cancel:hover {
+    background: var(--accent-soft);
+    color: var(--text);
+  }
+
+  .nav-link {
+    @apply mb-1 flex items-center gap-3 rounded-r-xl border-l-2 border-transparent transition;
+  }
+
+  .nav-link:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .nav-link.active {
+    border-left-color: var(--color-lavender);
+    color: var(--color-lavender);
+    background: linear-gradient(90deg, var(--accent-soft) 0%, transparent 100%);
+  }
+
+  .view-section {
+    display: none;
+  }
+
+  .view-section.active {
+    display: block;
+    animation: fadeInZen 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .title-calligraphic {
+    @apply font-display font-normal;
+    background: linear-gradient(
+      135deg,
+      var(--color-lavender) 0%,
+      var(--color-rose) 50%,
+      var(--color-mint) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .sea-reflections {
+    @apply pointer-events-none fixed inset-0 z-0;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(196, 181, 253, 0.25);
+    border-radius: 10px;
+  }
+}
+
+@keyframes fadeInZen {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

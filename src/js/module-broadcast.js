@@ -5,8 +5,8 @@ export function getHTML() {
     return `
     <section id="view-broadcast" class="view-section">
         <header class="mb-10">
-            <h3 class="text-xl font-bold uppercase italic tracking-tight text-magenta">Broadcast_Module</h3>
-            <p id="broadcast-form-status" class="text-[9px] text-gray-500 uppercase">Mode: Création_Nouvelle_Alerte</p>
+            <h3 class="font-heading text-xl font-bold tracking-tight text-lavender">Broadcast</h3>
+            <p id="broadcast-form-status" class="font-mono text-[9px] uppercase text-content-muted">Nouvelle alerte</p>
         </header>
         <form id="broadcast-form" class="space-y-4 max-w-3xl">
             <input type="hidden" id="editing-broadcast-id" value="">
@@ -26,7 +26,7 @@ export function getHTML() {
                     <option value="/join/">CIBLE: RECRUTEMENT</option>
                 </select>
             </div>
-            <p class="text-[10px] text-magenta mt-2">HTML simple autorisé (b, i, a, p, ul…). Scripts et handlers sont retirés à l'enregistrement.</p>
+            <p class="mt-2 font-mono text-[10px] text-lavender">HTML simple autorisé (b, i, a, p, ul…). Scripts et handlers retirés à l'enregistrement.</p>
             <textarea id="b-content" rows="6" placeholder="Message du pop-up..." class="admin-input" required></textarea>
             <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
                 <input type="text" id="b-btn-text" placeholder="TEXTE DU BOUTON (Optionnel)" class="admin-input">
@@ -38,7 +38,7 @@ export function getHTML() {
             </div>
         </form>
         <div class="mt-20">
-            <h4 class="text-magenta text-[10px] uppercase tracking-widest mb-6 border-b border-magenta/20 pb-2">// ALERTES_ENREGISTRÉES</h4>
+            <h4 class="mb-6 border-b border-line pb-2 font-mono text-[10px] uppercase tracking-widest text-lavender">// Alertes</h4>
             <div id="broadcast-list" class="space-y-2"></div>
         </div>
     </section>
@@ -58,28 +58,28 @@ export function init() {
         notifs.forEach((n) => {
             const div = document.createElement('div');
             div.className =
-                'flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group';
+                'flex justify-between items-center rounded-xl border border-line bg-surface-elevated p-3 transition group hover:border-lavender/40';
 
             const left = document.createElement('div');
             left.className = 'cursor-pointer flex-1';
             left.addEventListener('click', () => window.editBroadcast(n.id));
 
             const title = document.createElement('span');
-            title.className = 'text-xs font-bold text-white group-hover:text-magenta';
+            title.className = 'font-heading text-xs font-semibold text-content group-hover:text-lavender';
             title.textContent = n.title;
 
             const status = document.createElement('span');
-            status.className = `text-[9px] ${n.is_active ? 'text-green-500' : 'text-gray-600'} ml-2 font-bold uppercase`;
+            status.className = `ml-2 font-mono text-[9px] font-bold uppercase ${n.is_active ? 'text-mint-dark' : 'text-content-muted'}`;
             status.textContent = `[${n.is_active ? 'ACTIF' : 'INACTIF'}]`;
 
             const tag = document.createElement('span');
-            tag.className = 'text-[9px] text-gray-500 ml-2 font-mono';
+            tag.className = 'ml-2 font-mono text-[9px] text-content-muted';
             tag.textContent = `TAG: ${n.version_tag}`;
 
             left.append(title, status, tag);
 
             const del = document.createElement('button');
-            del.className = 'text-[8px] text-red-500 hover:text-white uppercase font-bold';
+            del.className = 'font-mono text-[8px] font-bold uppercase text-rose hover:text-content';
             del.textContent = '[ Supprimer ]';
             del.addEventListener('click', () => window.deleteBroadcast(n.id));
 

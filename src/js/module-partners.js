@@ -5,8 +5,8 @@ export function getHTML() {
     return `
     <section id="view-partners" class="view-section">
         <header class="mb-10">
-            <h3 class="text-xl font-bold uppercase italic tracking-tight" style="color: #D4AF37;">Business_Module</h3>
-            <p id="partner-form-status" class="text-[9px] text-gray-500 uppercase">Mode: Enregistrement_Nouveau_Partenaire</p>
+            <h3 class="font-heading text-xl font-bold tracking-tight text-gold">Partenariats</h3>
+            <p id="partner-form-status" class="font-mono text-[9px] uppercase text-content-muted">Nouveau partenaire</p>
         </header>
         
         <form id="partner-form" class="space-y-4 max-w-3xl">
@@ -14,15 +14,15 @@ export function getHTML() {
             
             <div class="grid grid-cols-3 gap-4">
                 <input type="text" id="p-name" placeholder="NOM DU PARTENAIRE / MÉCÈNE" class="admin-input" required>
-                <select id="p-tier" class="admin-input font-bold" style="color: #D4AF37;">
+                <select id="p-tier" class="admin-input font-bold text-gold">
                     <option value="PRIME">TIER 1 : PRIME_OPERATOR (Sponsor Majeur)</option>
                     <option value="OFFICIAL">TIER 2 : OFFICIAL_LINK (Partenaire)</option>
                     <option value="AFFILIATE" selected>TIER 3 : AFFILIATE (Affiliation)</option>
                     <option value="PATRON">TIER 4 : PATRON (Mécène / Donateur)</option>
                 </select>
                 <select id="p-status" class="admin-input font-bold">
-                    <option value="true" class="text-green-500">CONTRAT ACTIF</option>
-                    <option value="false" class="text-gray-500">CONTRAT SUSPENDU</option>
+                    <option value="true" class="text-mint-dark">CONTRAT ACTIF</option>
+                    <option value="false" class="text-content-muted">CONTRAT SUSPENDU</option>
                 </select>
             </div>
 
@@ -50,13 +50,13 @@ export function getHTML() {
             <textarea id="p-description" rows="4" placeholder="DESCRIPTION COURTE DU PARTENARIAT..." class="admin-input text-xs"></textarea>
             
             <div class="flex gap-4 mt-6">
-                <button type="submit" id="partner-submit-btn" class="btn-pub flex-1 !bg-[#D4AF37] hover:!bg-white hover:!text-[#D4AF37]">Signer_Contrat</button>
+                <button type="submit" id="partner-submit-btn" class="btn-pub flex-1 !bg-gradient-to-br from-gold-dark to-gold !text-stone-900 hover:!brightness-110">Enregistrer</button>
                 <button type="button" id="partner-cancel-btn" class="btn-cancel hidden" onclick="window.resetPartnerForm()">Annuler</button>
             </div>
         </form>
 
         <div class="mt-20">
-            <h4 class="text-[10px] uppercase tracking-widest mb-6 border-b pb-2" style="color: #D4AF37; border-color: rgba(212, 175, 55, 0.2);">// RÉSEAU_DE_PARTENAIRES_ACTIFS</h4>
+            <h4 class="mb-6 border-b border-gold/20 pb-2 font-mono text-[10px] uppercase tracking-widest text-gold">// Partenaires</h4>
             <div id="partners-list" class="space-y-2"></div>
         </div>
     </section>
@@ -80,21 +80,21 @@ export function init() {
         partners.forEach((p) => {
             const div = document.createElement('div');
             div.className =
-                'flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-[#D4AF37]/50 transition group';
+                'flex justify-between items-center rounded-xl border border-line bg-surface-elevated p-3 transition group hover:border-gold/40';
 
             const left = document.createElement('div');
-            left.className = 'cursor-pointer flex-1 flex items-center';
+            left.className = 'flex flex-1 cursor-pointer items-center';
             left.addEventListener('click', () => window.editPartner(p.id));
 
             const logoWrap = document.createElement('div');
             logoWrap.className =
-                'w-8 h-8 bg-black/50 border border-white/10 flex items-center justify-center mr-4 p-1';
+                'mr-4 flex h-8 w-8 items-center justify-center border border-line bg-black/30 p-1';
             const logoUrl = safeHttpsUrl(p.logo_url);
             if (logoUrl) {
                 const img = document.createElement('img');
                 img.src = logoUrl;
                 img.alt = '';
-                img.className = 'max-w-full max-h-full object-contain';
+                img.className = 'max-h-full max-w-full object-contain';
                 img.onerror = () => {
                     img.style.display = 'none';
                 };
@@ -103,15 +103,15 @@ export function init() {
 
             const meta = document.createElement('div');
             const name = document.createElement('span');
-            name.className = 'text-xs font-bold text-white group-hover:text-[#D4AF37] uppercase';
+            name.className = 'font-heading text-xs font-semibold uppercase text-content group-hover:text-gold';
             name.textContent = p.name;
 
             const tier = document.createElement('span');
-            tier.className = 'text-[9px] text-gray-500 ml-2 font-mono border border-gray-600/30 px-1';
+            tier.className = 'ml-2 border border-line px-1 font-mono text-[9px] text-content-muted';
             tier.textContent = p.tier;
 
             const status = document.createElement('span');
-            status.className = `text-[9px] ${p.is_active ? 'text-green-500' : 'text-gray-600'} ml-2 font-bold uppercase`;
+            status.className = `ml-2 font-mono text-[9px] font-bold uppercase ${p.is_active ? 'text-mint-dark' : 'text-content-muted'}`;
             status.textContent = `[${p.is_active ? 'ACTIF' : 'INACTIF'}]`;
 
             meta.append(name, tier, status);
@@ -122,12 +122,12 @@ export function init() {
                 const warn = document.createElement('span');
                 if (diffDays < 0) {
                     warn.className =
-                        'text-[9px] text-red-500 font-bold ml-3 bg-red-500/10 px-2 py-0.5 border border-red-500/30 animate-pulse';
+                        'ml-3 animate-pulse border border-rose/30 bg-rose/10 px-2 py-0.5 font-mono text-[9px] font-bold text-rose';
                     warn.textContent = '! EXPIRÉ';
                     meta.appendChild(warn);
                 } else if (diffDays <= 30) {
                     warn.className =
-                        'text-[9px] text-[#D4AF37] font-bold ml-3 bg-[#D4AF37]/10 px-2 py-0.5 border border-[#D4AF37]/30';
+                        'ml-3 border border-gold/30 bg-gold/10 px-2 py-0.5 font-mono text-[9px] font-bold text-gold';
                     warn.textContent = `J-${diffDays}`;
                     meta.appendChild(warn);
                 }
@@ -136,7 +136,7 @@ export function init() {
             left.append(logoWrap, meta);
 
             const del = document.createElement('button');
-            del.className = 'text-[8px] text-red-500 hover:text-white uppercase font-bold';
+            del.className = 'font-mono text-[8px] font-bold uppercase text-rose hover:text-content';
             del.textContent = '[ Rompre ]';
             del.addEventListener('click', () => window.deletePartner(p.id));
 

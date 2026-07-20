@@ -4,8 +4,8 @@ export function getHTML() {
     return `
     <section id="view-news" class="view-section">
         <header class="mb-10">
-            <h3 class="text-xl font-bold uppercase italic tracking-tight text-magenta">News_Module</h3>
-            <p id="news-form-status" class="text-[9px] text-gray-500 uppercase">Mode: Nouveau_Rapport_Tactique</p>
+            <h3 class="font-heading text-xl font-bold tracking-tight text-lavender">News</h3>
+            <p id="news-form-status" class="font-mono text-[9px] uppercase text-content-muted">Nouveau rapport</p>
         </header>
         <form id="news-form" class="space-y-4 max-w-3xl">
             <input type="hidden" id="editing-news-id" value="">
@@ -22,7 +22,7 @@ export function getHTML() {
             </div>
         </form>
         <div class="mt-20">
-            <h4 class="text-magenta text-[10px] uppercase tracking-widest mb-6 border-b border-magenta/20 pb-2">// ARCHIVES_DES_RAPPORTS</h4>
+            <h4 class="mb-6 border-b border-line pb-2 font-mono text-[10px] uppercase tracking-widest text-lavender">// Archives</h4>
             <div id="news-list" class="space-y-2"></div>
         </div>
     </section>
@@ -39,18 +39,18 @@ export function init() {
         posts.forEach((p) => {
             const div = document.createElement('div');
             div.className =
-                'flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group';
+                'flex justify-between items-center rounded-xl border border-line bg-surface-elevated p-3 transition group hover:border-lavender/40';
 
             const edit = document.createElement('div');
             edit.className = 'cursor-pointer flex-1';
             edit.addEventListener('click', () => window.editNews(p.id));
             const title = document.createElement('span');
-            title.className = 'text-xs font-bold text-white group-hover:text-magenta';
+            title.className = 'font-heading text-xs font-semibold text-content group-hover:text-lavender';
             title.textContent = p.title;
             edit.appendChild(title);
 
             const del = document.createElement('button');
-            del.className = 'text-[8px] text-red-500 font-bold uppercase';
+            del.className = 'font-mono text-[8px] font-bold uppercase text-rose';
             del.textContent = '[ Supprimer ]';
             del.addEventListener('click', () => window.deleteNews(p.id));
 

@@ -3,3 +3,4 @@ js/.bundle.tmp.js
 .env
 .env.*
 !.env.example
+css/admin.css

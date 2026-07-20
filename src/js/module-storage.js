@@ -6,15 +6,15 @@ export function getHTML() {
     <section id="view-storage" class="view-section">
         <header class="mb-10 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
             <div>
-                <h3 class="text-xl font-bold uppercase italic tracking-tight text-[#22c55e]">Cloud_Storage</h3>
-                <p class="text-[9px] text-gray-500 uppercase">Gowrax Assets / Documents & Images</p>
-                <div class="mt-2 flex items-center gap-2 text-xs font-mono text-gray-300">
-                    <span class="text-[#22c55e]">Chemin : </span> 
-                    <span id="storage-breadcrumb" class="bg-gray-800 px-2 py-1 rounded">/</span>
-                    <button onclick="window.StorageModule.goUp()" id="storage-up-btn" class="hidden text-gray-400 hover:text-white transition-colors bg-gray-800 px-2 py-1">⬅️ Retour</button>
+                <h3 class="font-heading text-xl font-bold tracking-tight text-mint">Cloud Storage</h3>
+                <p class="font-mono text-[9px] uppercase text-content-muted">Assets · documents & images</p>
+                <div class="mt-2 flex items-center gap-2 font-mono text-xs text-content">
+                    <span class="text-mint">Chemin :</span>
+                    <span id="storage-breadcrumb" class="rounded bg-surface-elevated px-2 py-1">/</span>
+                    <button onclick="window.StorageModule.goUp()" id="storage-up-btn" class="hidden bg-surface-elevated px-2 py-1 text-content-muted transition-colors hover:text-content">← Retour</button>
                 </div>
             </div>
-            <button onclick="window.StorageModule.openUploadModal()" class="btn-pub !bg-[#22c55e] text-black">Uploader Fichier</button>
+            <button onclick="window.StorageModule.openUploadModal()" class="btn-pub !from-mint-dark !to-mint !text-stone-900">Uploader</button>
         </header>
 
         <div id="storage-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -22,26 +22,26 @@ export function getHTML() {
     </section>
 
     <div id="storage-upload-modal" class="fixed inset-0 bg-black/90 z-[200] hidden items-center justify-center p-4">
-        <div class="bg-[#0a0a0f] border border-[#22c55e]/30 p-6 max-w-lg w-full relative">
-            <h3 class="text-[#22c55e] uppercase tracking-widest mb-4">Uploader Document</h3>
-            <p class="text-[9px] text-gray-500 mb-3 uppercase">jpg / png / webp / gif / svg / pdf — max 5 Mo</p>
-            <input type="file" id="storage-file-input" accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.pdf,image/jpeg,image/png,image/webp,image/gif,image/svg+xml,application/pdf" class="w-full mb-4 text-xs text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-xs file:font-bold file:bg-[#22c55e]/20 file:text-[#22c55e] hover:file:bg-[#22c55e]/30">
+        <div class="relative w-full max-w-lg border border-mint/30 bg-surface-elevated p-6">
+            <h3 class="mb-4 font-mono uppercase tracking-widest text-mint">Uploader</h3>
+            <p class="mb-3 font-mono text-[9px] uppercase text-content-muted">jpg / png / webp / gif / svg / pdf — max 5 Mo</p>
+            <input type="file" id="storage-file-input" accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.pdf,image/jpeg,image/png,image/webp,image/gif,image/svg+xml,application/pdf" class="mb-4 w-full font-mono text-xs text-content-muted file:mr-4 file:border-0 file:bg-mint/20 file:px-4 file:py-2 file:font-bold file:text-mint hover:file:bg-mint/30">
             <div class="flex gap-4">
-                <button onclick="window.StorageModule.uploadFile()" id="storage-upload-btn" class="btn-pub !bg-[#22c55e] text-black flex-1">Envoyer</button>
+                <button onclick="window.StorageModule.uploadFile()" id="storage-upload-btn" class="btn-pub flex-1 !from-mint-dark !to-mint !text-stone-900">Envoyer</button>
                 <button onclick="window.StorageModule.closeUploadModal()" class="btn-cancel">Annuler</button>
             </div>
         </div>
     </div>
 
     <div id="storage-picker-modal" class="fixed inset-0 bg-black/80 z-[300] hidden items-center justify-center p-4 md:p-10 backdrop-blur-sm">
-        <div class="bg-[#0a0a0f] border border-[#22c55e]/40 w-full max-w-7xl max-h-[90vh] flex flex-col p-6 relative shadow-2xl">
-            <div class="flex justify-between items-center mb-6 border-b border-[#22c55e]/20 pb-4">
-                <h2 class="text-[#22c55e] text-xl uppercase font-bold tracking-widest">// SELECTRIX_ASSET</h2>
-                <button onclick="window.StorageModule.closePicker()" class="text-gray-500 hover:text-red-500 text-3xl leading-none">&times;</button>
+        <div class="relative flex max-h-[90vh] w-full max-w-7xl flex-col border border-mint/40 bg-surface-elevated p-6 shadow-2xl">
+            <div class="mb-6 flex items-center justify-between border-b border-mint/20 pb-4">
+                <h2 class="font-heading text-xl font-bold uppercase tracking-widest text-mint">// Select asset</h2>
+                <button onclick="window.StorageModule.closePicker()" class="text-3xl leading-none text-content-muted hover:text-rose">&times;</button>
             </div>
-            <div class="flex justify-end mb-4">
+            <div class="mb-4 flex justify-end">
                 <input type="file" id="storage-picker-upload" accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.pdf,image/jpeg,image/png,image/webp,image/gif,image/svg+xml,application/pdf" class="hidden" onchange="window.StorageModule.uploadFromPicker(event)">
-                <button onclick="document.getElementById('storage-picker-upload').click()" class="border border-[#22c55e] text-[#22c55e] hover:bg-[#22c55e] hover:text-black transition-colors text-[10px] px-3 py-1 uppercase font-bold">Dépôt Rapide</button>
+                <button onclick="document.getElementById('storage-picker-upload').click()" class="border border-mint px-3 py-1 font-mono text-[10px] font-bold uppercase text-mint transition-colors hover:bg-mint hover:text-stone-900">Dépôt rapide</button>
             </div>
             <div id="storage-picker-grid" class="flex-1 overflow-y-auto grid grid-cols-4 md:grid-cols-6 lg:grid-cols-10 gap-3 pb-8 pr-2 custom-scrollbar">
             </div>
@@ -59,13 +59,13 @@ function el(tag, className, text) {
 
 function buildFileCard({ name, isFolder, isImg, pubUrl, fullPath, onOpenFolder, onCopy, onDl, onRename, onDel }) {
     const card = el('div', isFolder
-        ? 'bg-[#0f101a] border border-gray-800 p-2 group hover:border-[#22c55e] transition-colors relative cursor-pointer flex flex-col items-center justify-center'
-        : 'bg-[#0f101a] border border-gray-800 p-2 group hover:border-[#22c55e] transition-colors relative flex flex-col');
+        ? 'bg-surface-elevated border border-line p-2 group hover:border-mint transition-colors relative cursor-pointer flex flex-col items-center justify-center'
+        : 'bg-surface-elevated border border-line p-2 group hover:border-mint transition-colors relative flex flex-col');
 
     if (isFolder) {
         card.addEventListener('click', onOpenFolder);
         const icon = el('div', 'aspect-square w-full bg-black mb-2 flex items-center justify-center text-4xl', '📁');
-        const label = el('p', 'text-[10px] text-[#22c55e] truncate mb-2 w-full text-center font-bold');
+        const label = el('p', 'text-[10px] text-mint truncate mb-2 w-full text-center font-bold');
         label.textContent = name;
         label.title = name;
         card.append(icon, label);
@@ -89,12 +89,12 @@ function buildFileCard({ name, isFolder, isImg, pubUrl, fullPath, onOpenFolder, 
 
     const actions = el('div', 'grid grid-cols-2 gap-1 mt-auto text-[8px] uppercase');
     const mkBtn = (labelText, handler, hover) => {
-        const b = el('button', `bg-gray-800 ${hover} text-white py-1 truncate`, labelText);
+        const b = el('button', `bg-surface-elevated ${hover} text-white py-1 truncate`, labelText);
         b.addEventListener('click', handler);
         return b;
     };
     actions.append(
-        mkBtn('Copier', onCopy, 'hover:bg-[#22c55e] hover:text-black'),
+        mkBtn('Copier', onCopy, 'hover:bg-mint hover:text-black'),
         mkBtn('DL', onDl, 'hover:bg-blue-400 hover:text-black'),
         mkBtn('Move', onRename, 'hover:bg-yellow-500 hover:text-black'),
         mkBtn('Del', onDel, 'hover:bg-red-500')
@@ -289,7 +289,7 @@ export function init() {
                 if (path !== '') {
                     const upBtn = el('div', 'col-span-full mb-4');
                     const parentPath = path.split('/').slice(0, -1).join('/');
-                    const btn = el('button', 'bg-gray-800 text-white px-3 py-1 text-xs hover:bg-[#22c55e] hover:text-black transition-colors', '⬅️ Dossier Parent');
+                    const btn = el('button', 'bg-surface-elevated text-white px-3 py-1 text-xs hover:bg-mint hover:text-black transition-colors', '⬅️ Dossier Parent');
                     btn.addEventListener('click', () => this.loadPickerFiles(parentPath));
                     upBtn.appendChild(btn);
                     grid.appendChild(upBtn);
@@ -305,7 +305,7 @@ export function init() {
                     if (isFolder) {
                         const card = el(
                             'div',
-                            'bg-[#0f101a] border border-gray-800 p-1 md:p-2 cursor-pointer hover:border-[#22c55e] transition-colors relative flex flex-col items-center justify-center rounded overflow-hidden'
+                            'bg-surface-elevated border border-line p-1 md:p-2 cursor-pointer hover:border-mint transition-colors relative flex flex-col items-center justify-center rounded overflow-hidden'
                         );
                         card.addEventListener('click', () =>
                             this.loadPickerFiles(path === '' ? f.name : `${path}/${f.name}`)
@@ -313,7 +313,7 @@ export function init() {
                         card.append(
                             el('div', 'aspect-square w-full bg-black mb-1 flex items-center justify-center text-xl md:text-3xl', '📁')
                         );
-                        const label = el('p', 'text-[8px] md:text-[9px] text-[#22c55e] font-bold w-full text-center truncate');
+                        const label = el('p', 'text-[8px] md:text-[9px] text-mint font-bold w-full text-center truncate');
                         label.textContent = f.name;
                         label.title = f.name;
                         card.appendChild(label);
@@ -326,7 +326,7 @@ export function init() {
                     const isImg = f.metadata?.mimetype?.startsWith('image/');
                     const card = el(
                         'div',
-                        'bg-[#0f101a] border border-gray-800 p-1 md:p-2 cursor-pointer hover:border-[#22c55e] transition-colors relative rounded overflow-hidden group'
+                        'bg-surface-elevated border border-line p-1 md:p-2 cursor-pointer hover:border-mint transition-colors relative rounded overflow-hidden group'
                     );
                     card.addEventListener('click', () => this.selectFromPicker(pubUrl));
                     const preview = el('div', 'aspect-square bg-black mb-1 overflow-hidden flex items-center justify-center relative');
@@ -407,7 +407,7 @@ export function init() {
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className =
-                    'storage-injector-btn border border-[#22c55e] text-[#22c55e] px-3 py-2 text-[10px] uppercase font-bold hover:bg-[#22c55e] hover:text-black transition-colors min-w-max';
+                    'storage-injector-btn border border-mint text-mint px-3 py-2 text-[10px] uppercase font-bold hover:bg-mint hover:text-black transition-colors min-w-max';
                 btn.textContent = '📁 SUPABASE';
                 btn.onclick = (e) => {
                     e.preventDefault();
