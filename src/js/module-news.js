@@ -1,4 +1,4 @@
-import { _supabase } from './core.js';
+import { _supabase, triggerSiteDeploy } from './core.js';
 
 export function getHTML() {
     return `
@@ -30,21 +30,36 @@ export function getHTML() {
 }
 
 export function init() {
-    window.loadNewsList = async function() {
+    window.loadNewsList = async function () {
         const { data: posts } = await _supabase.from('posts').select('id, title, slug').order('created_at', { ascending: false });
         const list = document.getElementById('news-list');
-        list.innerHTML = '';
-        if (posts) {
-            posts.forEach(p => {
-                const div = document.createElement('div');
-                div.className = "flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group";
-                div.innerHTML = `<div class="cursor-pointer flex-1" onclick="window.editNews('${p.id}')"><span class="text-xs font-bold text-white group-hover:text-magenta">${p.title}</span></div><button onclick="window.deleteNews('${p.id}')" class="text-[8px] text-red-500 font-bold uppercase">[ Supprimer ]</button>`;
-                list.appendChild(div);
-            });
-        }
+        list.replaceChildren();
+        if (!posts) return;
+
+        posts.forEach((p) => {
+            const div = document.createElement('div');
+            div.className =
+                'flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group';
+
+            const edit = document.createElement('div');
+            edit.className = 'cursor-pointer flex-1';
+            edit.addEventListener('click', () => window.editNews(p.id));
+            const title = document.createElement('span');
+            title.className = 'text-xs font-bold text-white group-hover:text-magenta';
+            title.textContent = p.title;
+            edit.appendChild(title);
+
+            const del = document.createElement('button');
+            del.className = 'text-[8px] text-red-500 font-bold uppercase';
+            del.textContent = '[ Supprimer ]';
+            del.addEventListener('click', () => window.deleteNews(p.id));
+
+            div.append(edit, del);
+            list.appendChild(div);
+        });
     };
 
-    window.editNews = async function(id) {
+    window.editNews = async function (id) {
         const { data: p } = await _supabase.from('posts').select('*').eq('id', id).single();
         if (p) {
             document.getElementById('editing-news-id').value = p.id;
@@ -53,34 +68,57 @@ export function init() {
             document.getElementById('n-tags').value = (p.tags || []).join(', ');
             document.getElementById('n-image').value = p.image_url || '';
             document.getElementById('n-content').value = p.content;
-            document.getElementById('news-submit-btn').innerText = "Mettre_à_jour_Rapport";
+            document.getElementById('news-submit-btn').innerText = 'Mettre_à_jour_Rapport';
             document.getElementById('news-cancel-btn').classList.remove('hidden');
         }
     };
 
-    window.resetNewsForm = function() {
+    window.resetNewsForm = function () {
         document.getElementById('news-form').reset();
         document.getElementById('editing-news-id').value = '';
-        document.getElementById('news-submit-btn').innerText = "Diffuser_News";
+        document.getElementById('news-submit-btn').innerText = 'Diffuser_News';
         document.getElementById('news-cancel-btn').classList.add('hidden');
     };
 
-    window.deleteNews = async function(id) {
-        if (confirm("Supprimer news ?")) { await _supabase.from('posts').delete().eq('id', id); window.loadNewsList(); }
+    window.deleteNews = async function (id) {
+        if (confirm('Supprimer news ?')) {
+            const { error } = await _supabase.from('posts').delete().eq('id', id);
+            if (error) {
+                alert(error.message);
+                return;
+            }
+            window.loadNewsList();
+            triggerSiteDeploy().then((r) => {
+                if (r.ok) document.getElementById('news-form-status').textContent = 'Deploy site lancé (~2 min)';
+            });
+        }
     };
 
     document.getElementById('news-form').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const statusEl = document.getElementById('news-form-status');
         const id = document.getElementById('editing-news-id').value;
         const payload = {
             title: document.getElementById('n-title').value,
             slug: document.getElementById('n-slug').value,
             image_url: document.getElementById('n-image').value,
-            tags: document.getElementById('n-tags').value.split(',').map(t => t.trim().toUpperCase()),
-            content: document.getElementById('n-content').value
+            tags: document.getElementById('n-tags').value.split(',').map((t) => t.trim().toUpperCase()).filter(Boolean),
+            content: document.getElementById('n-content').value,
         };
-        const res = id ? await _supabase.from('posts').update(payload).eq('id', id) : await _supabase.from('posts').insert([payload]);
-        if (res.error) alert(res.error.message); else { window.resetNewsForm(); window.loadNewsList(); }
+        const res = id
+            ? await _supabase.from('posts').update(payload).eq('id', id)
+            : await _supabase.from('posts').insert([payload]);
+        if (res.error) {
+            alert(res.error.message);
+            return;
+        }
+        window.resetNewsForm();
+        window.loadNewsList();
+        statusEl.textContent = 'Deploy en cours…';
+        const deploy = await triggerSiteDeploy();
+        statusEl.textContent = deploy.ok
+            ? 'Rapport enregistré — site en rebuild (~2 min)'
+            : 'Rapport OK — deploy non déclenché (voir config Supabase/GitHub)';
     });
 
     window.loadNewsList();

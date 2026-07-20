@@ -1,4 +1,5 @@
 import { _supabase } from './core.js';
+import { sanitizeBroadcastHtml } from './security-utils.js';
 
 export function getHTML() {
     return `
@@ -25,11 +26,11 @@ export function getHTML() {
                     <option value="/join/">CIBLE: RECRUTEMENT</option>
                 </select>
             </div>
-            <p class="text-[10px] text-magenta mt-2">HTML simple supporté. Les sauts de ligne sont conservés.</p>
+            <p class="text-[10px] text-magenta mt-2">HTML simple autorisé (b, i, a, p, ul…). Scripts et handlers sont retirés à l'enregistrement.</p>
             <textarea id="b-content" rows="6" placeholder="Message du pop-up..." class="admin-input" required></textarea>
             <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
                 <input type="text" id="b-btn-text" placeholder="TEXTE DU BOUTON (Optionnel)" class="admin-input">
-                <input type="text" id="b-btn-link" placeholder="LIEN DU BOUTON (Optionnel)" class="admin-input">
+                <input type="url" id="b-btn-link" placeholder="LIEN DU BOUTON (https://...)" class="admin-input">
             </div>
             <div class="flex gap-4 mt-6">
                 <button type="submit" id="broadcast-submit-btn" class="btn-pub flex-1">Publier_Alerte</button>
@@ -45,29 +46,49 @@ export function getHTML() {
 }
 
 export function init() {
-    window.loadBroadcastList = async function() {
-        const { data: notifs } = await _supabase.from('notifications').select('*').order('created_at', { ascending: false });
+    window.loadBroadcastList = async function () {
+        const { data: notifs } = await _supabase
+            .from('notifications')
+            .select('*')
+            .order('created_at', { ascending: false });
         const list = document.getElementById('broadcast-list');
-        list.innerHTML = '';
-        if (notifs) {
-            notifs.forEach(n => {
-                const div = document.createElement('div');
-                div.className = "flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group";
-                const statusColor = n.is_active ? "text-green-500" : "text-gray-600";
-                div.innerHTML = `
-                    <div class="cursor-pointer flex-1" onclick="window.editBroadcast('${n.id}')">
-                        <span class="text-xs font-bold text-white group-hover:text-magenta">${n.title}</span>
-                        <span class="text-[9px] ${statusColor} ml-2 font-bold uppercase">[${n.is_active ? 'ACTIF' : 'INACTIF'}]</span>
-                        <span class="text-[9px] text-gray-500 ml-2 font-mono">TAG: ${n.version_tag}</span>
-                    </div>
-                    <button onclick="window.deleteBroadcast('${n.id}')" class="text-[8px] text-red-500 hover:text-white uppercase font-bold">[ Supprimer ]</button>
-                `;
-                list.appendChild(div);
-            });
-        }
+        list.replaceChildren();
+        if (!notifs) return;
+
+        notifs.forEach((n) => {
+            const div = document.createElement('div');
+            div.className =
+                'flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-magenta/30 transition group';
+
+            const left = document.createElement('div');
+            left.className = 'cursor-pointer flex-1';
+            left.addEventListener('click', () => window.editBroadcast(n.id));
+
+            const title = document.createElement('span');
+            title.className = 'text-xs font-bold text-white group-hover:text-magenta';
+            title.textContent = n.title;
+
+            const status = document.createElement('span');
+            status.className = `text-[9px] ${n.is_active ? 'text-green-500' : 'text-gray-600'} ml-2 font-bold uppercase`;
+            status.textContent = `[${n.is_active ? 'ACTIF' : 'INACTIF'}]`;
+
+            const tag = document.createElement('span');
+            tag.className = 'text-[9px] text-gray-500 ml-2 font-mono';
+            tag.textContent = `TAG: ${n.version_tag}`;
+
+            left.append(title, status, tag);
+
+            const del = document.createElement('button');
+            del.className = 'text-[8px] text-red-500 hover:text-white uppercase font-bold';
+            del.textContent = '[ Supprimer ]';
+            del.addEventListener('click', () => window.deleteBroadcast(n.id));
+
+            div.append(left, del);
+            list.appendChild(div);
+        });
     };
 
-    window.editBroadcast = async function(id) {
+    window.editBroadcast = async function (id) {
         const { data: n } = await _supabase.from('notifications').select('*').eq('id', id).single();
         if (n) {
             document.getElementById('editing-broadcast-id').value = n.id;
@@ -78,40 +99,65 @@ export function init() {
             document.getElementById('b-content').value = n.content;
             document.getElementById('b-btn-text').value = n.button_text || '';
             document.getElementById('b-btn-link').value = n.button_link || '';
-            document.getElementById('broadcast-submit-btn').innerText = "Mettre_à_jour_Alerte";
+            document.getElementById('broadcast-submit-btn').innerText = 'Mettre_à_jour_Alerte';
             document.getElementById('broadcast-cancel-btn').classList.remove('hidden');
         }
     };
 
-    window.resetBroadcastForm = function() {
+    window.resetBroadcastForm = function () {
         document.getElementById('broadcast-form').reset();
         document.getElementById('editing-broadcast-id').value = '';
-        document.getElementById('broadcast-submit-btn').innerText = "Publier_Alerte";
+        document.getElementById('broadcast-submit-btn').innerText = 'Publier_Alerte';
         document.getElementById('broadcast-cancel-btn').classList.add('hidden');
     };
 
-    window.deleteBroadcast = async function(id) {
-        if (confirm("Supprimer l'alerte ?")) { await _supabase.from('notifications').delete().eq('id', id); window.loadBroadcastList(); }
+    window.deleteBroadcast = async function (id) {
+        if (confirm("Supprimer l'alerte ?")) {
+            await _supabase.from('notifications').delete().eq('id', id);
+            window.loadBroadcastList();
+        }
     };
 
     document.getElementById('broadcast-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('editing-broadcast-id').value;
-        const isActive = document.getElementById('b-status').value === "true";
-        if (isActive) await _supabase.from('notifications').update({ is_active: false }).neq('id', '00000000-0000-0000-0000-000000000000');
+        const isActive = document.getElementById('b-status').value === 'true';
+        if (isActive) {
+            await _supabase
+                .from('notifications')
+                .update({ is_active: false })
+                .neq('id', '00000000-0000-0000-0000-000000000000');
+        }
+
+        let buttonLink = document.getElementById('b-btn-link').value.trim() || null;
+        if (buttonLink) {
+            try {
+                const u = new URL(buttonLink, window.location.origin);
+                if (u.protocol !== 'https:' && u.protocol !== 'http:') buttonLink = null;
+                else buttonLink = u.href;
+            } catch {
+                buttonLink = null;
+            }
+        }
+
         const payload = {
             version_tag: document.getElementById('b-tag').value,
             is_active: isActive,
             title: document.getElementById('b-title').value,
             target_page: document.getElementById('b-target').value,
-            content: document.getElementById('b-content').value,
+            content: sanitizeBroadcastHtml(document.getElementById('b-content').value),
             button_text: document.getElementById('b-btn-text').value || null,
-            button_link: document.getElementById('b-btn-link').value || null,
+            button_link: buttonLink,
         };
-        const res = id ? await _supabase.from('notifications').update(payload).eq('id', id) : await _supabase.from('notifications').insert([payload]);
-        if (res.error) alert(res.error.message); else { window.resetBroadcastForm(); window.loadBroadcastList(); }
+        const res = id
+            ? await _supabase.from('notifications').update(payload).eq('id', id)
+            : await _supabase.from('notifications').insert([payload]);
+        if (res.error) alert(res.error.message);
+        else {
+            window.resetBroadcastForm();
+            window.loadBroadcastList();
+        }
     });
 
-    // Chargement initial
     window.loadBroadcastList();
 }

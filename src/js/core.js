@@ -1,161 +1,140 @@
+import { createClient } from '@supabase/supabase-js';
 import * as modBroadcast from './module-broadcast.js';
 import * as modNews from './module-news.js';
 import * as modPartners from './module-partners.js';
 import * as modStorage from './module-storage.js';
 
-const SUPABASE_URL = 'https://nvtcjaallxoweujbyhng.supabase.co';
+export const SUPABASE_URL = 'https://nvtcjaallxoweujbyhng.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52dGNqYWFsbHhvd2V1amJ5aG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NDc4OTEsImV4cCI6MjA4NzQyMzg5MX0.a0FkgYwG3yxu0GMXA6wV-6GqFamB9Pu-E57_z6KkHik';
 
-export const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+export const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-class SecurityManager {
-    static _O0 = 15 * 60 * 1000;
-    static _I1 = null;
-    static _S2 = null;
-    static _T3 = null;
+function isAdminUser(user) {
+    return user?.app_metadata?.role === 'admin';
+}
 
-    static init() {
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('keydown', e => {
-            if ([123, 73, 74, 85, 67].includes(e.keyCode) && (e.ctrlKey || e.metaKey || e.keyCode === 123)) {
-                e.preventDefault();
-                return false;
-            }
+/** Déclenche le rebuild GitHub Pages (après publish news) */
+export async function triggerSiteDeploy() {
+    try {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (!session) return { ok: false, error: 'no_session' };
+
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/trigger-site-deploy`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${session.access_token}`,
+                apikey: SUPABASE_KEY,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ source: 'admin-news' }),
         });
 
-        this._x9();
-
-        window._G_TK = {
-            R0: () => this.bC('0x01_MANUAL_FORCE'),
-            L1: () => this.bC('0x02_MANUAL_LOCK'),
-            U2: () => { this.resetLoginAttempts(); },
-            S3: () => {}
-        };
+        if (!res.ok) {
+            const detail = await res.text();
+            console.warn('[deploy]', res.status, detail);
+            return { ok: false, error: detail };
+        }
+        return { ok: true, ...(await res.json()) };
+    } catch (err) {
+        console.warn('[deploy]', err);
+        return { ok: false, error: String(err) };
     }
+}
 
-    static _x9() {
-        const n = f => /\{\s*\[native code\]\s*\}/.test('' + f);
-        if (!n(setTimeout) || !n(setInterval) || !n(fetch)) this.bC('0x10_CORE_TAMPER');
+/** Session idle timeout + periodic auth re-check (no client-side "security theater"). */
+class SessionGuard {
+    static IDLE_MS = 15 * 60 * 1000;
+    static idleTimer = null;
+    static pollTimer = null;
 
-        let _zz = false;
-        Object.defineProperty(window, 'disableAdminAuth', {
-            get: () => { this.bC('0x11_HP_READ'); return _zz; },
-            set: () => { this.bC('0x12_HP_WRITE'); }
-        });
-
-        const loop = setInterval(() => {
-            const t = performance.now();
-            debugger;
-            if (performance.now() - t > 100) { clearInterval(loop); this.bC('0x13_DEV_SYNC'); }
-            if (!n(setTimeout)) this.bC('0x10_CORE_TAMPER');
-        }, 1500);
-
-        const mo = new MutationObserver(() => {
-            const az = document.getElementById('app-root');
-            if (az && !az.classList.contains('hidden') && !this._T3) this.bC('0x14_DOM_INJECT');
-        });
-        mo.observe(document.body, { childList: true, subtree: true, attributes: true });
-    }
-
-    static startBunkerMonitoring() {
-        this._T3 = 'G-' + performance.now().toString(36) + '-' + Math.random().toString(36).substring(2);
-        sessionStorage.setItem('_g_ct', this._T3);
-
-        const rx = () => {
-            clearTimeout(this._I1);
-            this._I1 = setTimeout(() => this.bC('0x20_IDLE'), this._O0);
+    static start() {
+        const resetIdle = () => {
+            clearTimeout(this.idleTimer);
+            this.idleTimer = setTimeout(() => this.lock('Session expirée (inactivité)'), this.IDLE_MS);
         };
-        ['mousemove', 'keydown', 'scroll', 'click'].forEach(e => window.addEventListener(e, rx, { passive: true }));
-        rx();
+        ['mousemove', 'keydown', 'scroll', 'click'].forEach((e) =>
+            window.addEventListener(e, resetIdle, { passive: true })
+        );
+        resetIdle();
 
-        this._S2 = setInterval(async () => {
-            if (sessionStorage.getItem('_g_ct') !== this._T3) return this.bC('0x21_TOKEN_INVALID');
+        this.pollTimer = setInterval(async () => {
             const { data: { session }, error } = await _supabase.auth.getSession();
-            if (!session || error) this.bC('0x22_SESSION_LOST');
+            if (!session || error || !isAdminUser(session.user)) {
+                this.lock('Session invalide ou droits insuffisants');
+            }
         }, 15000);
     }
 
-    static async bC(c) {
-        clearTimeout(this._I1);
-        clearInterval(this._S2);
-        sessionStorage.removeItem('_g_ct');
+    static async lock(message) {
+        clearTimeout(this.idleTimer);
+        clearInterval(this.pollTimer);
         await _supabase.auth.signOut();
-        document.body.innerHTML = `<div style="background:#050508;height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:monospace;color:#ef4444;position:fixed;inset:0;z-index:99999"><h1 style="font-size:3rem;margin:0;text-transform:uppercase;letter-spacing:10px">CRITICAL BREACH</h1><p style="margin:20px 0 40px;letter-spacing:4px">ERR_CODE : ${c}</p><button onclick="location.reload()" style="background:transparent;color:#ef4444;border:1px solid #ef4444;padding:15px 40px;cursor:pointer;font-weight:bold">[ SYSTEM_REBOOT ]</button></div>`;
-    }
-
-    static validateBruteForce() {
-        const l = localStorage.getItem('_g_lck');
-        if (l && Date.now() < parseInt(l)) throw new Error('ERR_0x99');
-    }
-
-    static recordFailedLogin() {
-        let a = parseInt(localStorage.getItem('_g_fail') || '0') + 1;
-        if (a >= 5) {
-            localStorage.setItem('_g_lck', Date.now() + 5 * 60 * 1000);
-            localStorage.setItem('_g_fail', '0');
-        } else {
-            localStorage.setItem('_g_fail', a.toString());
-        }
-        return a;
-    }
-
-    static resetLoginAttempts() {
-        localStorage.removeItem('_g_fail');
-        localStorage.removeItem('_g_lck');
+        const root = document.createElement('div');
+        root.style.cssText =
+            'background:#050508;height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:monospace;color:#ef4444;position:fixed;inset:0;z-index:99999';
+        const h1 = document.createElement('h1');
+        h1.style.cssText = 'font-size:1.5rem;margin:0;text-transform:uppercase;letter-spacing:4px';
+        h1.textContent = 'Session terminée';
+        const p = document.createElement('p');
+        p.style.cssText = 'margin:20px 0 40px;letter-spacing:2px;color:#aaa;font-size:12px';
+        p.textContent = message;
+        const btn = document.createElement('button');
+        btn.textContent = 'Recharger';
+        btn.style.cssText =
+            'background:transparent;color:#ef4444;border:1px solid #ef4444;padding:15px 40px;cursor:pointer;font-weight:bold';
+        btn.onclick = () => location.reload();
+        root.append(h1, p, btn);
+        document.body.replaceChildren(root);
     }
 }
 
 window.Core = class Core {
     static async init() {
-        SecurityManager.init();
         this.setupLogin();
 
         const { data: { session } } = await _supabase.auth.getSession();
         if (session) {
-            SecurityManager.startBunkerMonitoring();
+            // Refresh so app_metadata.role from DB is present in JWT after role migrations
+            const { data: refreshed } = await _supabase.auth.refreshSession();
+            const user = refreshed?.session?.user || session.user;
+            if (!isAdminUser(user)) {
+                await _supabase.auth.signOut();
+                return;
+            }
+            SessionGuard.start();
             this.buildDashboard();
         }
     }
 
     static setupLogin() {
         document.getElementById('login-button').addEventListener('click', async () => {
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const btn = document.getElementById('login-button');
             const err = document.getElementById('login-error');
 
-            if (btoa(email) === 'R09XUkFY' && btoa(password) === 'YnJlYWNo') {
-                SecurityManager.resetLoginAttempts();
-                err.classList.add('hidden');
-                btn.innerText = 'INITIALISER_LIAISON';
-                document.getElementById('email').value = '';
-                document.getElementById('password').value = '';
-                return;
-            }
-
-            try {
-                SecurityManager.validateBruteForce();
-            } catch (bruteError) {
-                err.innerText = 'ALERTE SÉCURITÉ : ' + bruteError.message;
-                err.classList.remove('hidden');
-                return;
-            }
-
             btn.innerText = 'AUTHENTIFICATION...';
             err.classList.add('hidden');
 
-            const { error } = await _supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
                 btn.innerText = 'INITIALISER_LIAISON';
-                const attempts = SecurityManager.recordFailedLogin();
-                err.innerText = `ÉCHEC : ${error.message} (${5 - attempts} essai(s) restant(s))`;
+                err.innerText = `ÉCHEC : ${error.message}`;
                 err.classList.remove('hidden');
-            } else {
-                SecurityManager.resetLoginAttempts();
-                SecurityManager.startBunkerMonitoring();
-                this.buildDashboard();
+                return;
             }
+
+            if (!isAdminUser(data.user)) {
+                await _supabase.auth.signOut();
+                btn.innerText = 'INITIALISER_LIAISON';
+                err.innerText = 'ACCÈS REFUSÉ : compte non administrateur.';
+                err.classList.remove('hidden');
+                return;
+            }
+
+            SessionGuard.start();
+            this.buildDashboard();
         });
     }
 
@@ -189,8 +168,8 @@ window.Core = class Core {
     }
 
     static switchView(viewId) {
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        document.querySelectorAll('.view-section').forEach((s) => s.classList.remove('active'));
+        document.querySelectorAll('.nav-link').forEach((l) => l.classList.remove('active'));
 
         const section = document.getElementById(viewId);
         const link = document.getElementById('link-' + viewId.split('-')[1]);

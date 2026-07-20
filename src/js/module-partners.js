@@ -1,4 +1,5 @@
-import { _supabase } from './core.js';
+import { _supabase, triggerSiteDeploy } from './core.js';
+import { safeHttpsUrl } from './security-utils.js';
 
 export function getHTML() {
     return `
@@ -63,54 +64,88 @@ export function getHTML() {
 }
 
 export function init() {
-    window.loadPartnersList = async function() {
-        const { data: partners } = await _supabase.from('partners').select('*').order('priority_level', { ascending: false }).order('created_at', { ascending: false });
+    window.loadPartnersList = async function () {
+        const { data: partners } = await _supabase
+            .from('partners')
+            .select('*')
+            .order('priority_level', { ascending: false })
+            .order('created_at', { ascending: false });
         const list = document.getElementById('partners-list');
-        list.innerHTML = '';
-        
-        if (partners) {
-            const today = new Date();
-            
-            partners.forEach(p => {
-                const div = document.createElement('div');
-                div.className = "flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-[#D4AF37]/50 transition group";
-                
-                const statusColor = p.is_active ? "text-green-500" : "text-gray-600";
-                
-                // Calcul pour l'alerte de fin de contrat
-                let warningHtml = "";
-                if (p.contract_end) {
-                    const endDate = new Date(p.contract_end);
-                    const diffTime = endDate - today;
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    if (diffDays < 0) {
-                        warningHtml = `<span class="text-[9px] text-red-500 font-bold ml-3 bg-red-500/10 px-2 py-0.5 border border-red-500/30 animate-pulse">! EXIPRÉ</span>`;
-                    } else if (diffDays <= 30) {
-                        warningHtml = `<span class="text-[9px] text-[#D4AF37] font-bold ml-3 bg-[#D4AF37]/10 px-2 py-0.5 border border-[#D4AF37]/30">J-${diffDays}</span>`;
-                    }
-                }
+        list.replaceChildren();
 
-                div.innerHTML = `
-                    <div class="cursor-pointer flex-1 flex items-center" onclick="window.editPartner('${p.id}')">
-                        <div class="w-8 h-8 bg-black/50 border border-white/10 flex items-center justify-center mr-4 p-1">
-                            <img src="${p.logo_url}" class="max-w-full max-h-full object-contain" alt="logo" onerror="this.style.display='none'">
-                        </div>
-                        <div>
-                            <span class="text-xs font-bold text-white group-hover:text-[#D4AF37] uppercase">${p.name}</span>
-                            <span class="text-[9px] text-gray-500 ml-2 font-mono border border-gray-600/30 px-1">${p.tier}</span>
-                            <span class="text-[9px] ${statusColor} ml-2 font-bold uppercase">[${p.is_active ? 'ACTIF' : 'INACTIF'}]</span>
-                            ${warningHtml}
-                        </div>
-                    </div>
-                    <button onclick="window.deletePartner('${p.id}')" class="text-[8px] text-red-500 hover:text-white uppercase font-bold">[ Rompre ]</button>
-                `;
-                list.appendChild(div);
-            });
-        }
+        if (!partners) return;
+
+        const today = new Date();
+
+        partners.forEach((p) => {
+            const div = document.createElement('div');
+            div.className =
+                'flex justify-between items-center bg-[#0f101a] p-3 border border-white/5 hover:border-[#D4AF37]/50 transition group';
+
+            const left = document.createElement('div');
+            left.className = 'cursor-pointer flex-1 flex items-center';
+            left.addEventListener('click', () => window.editPartner(p.id));
+
+            const logoWrap = document.createElement('div');
+            logoWrap.className =
+                'w-8 h-8 bg-black/50 border border-white/10 flex items-center justify-center mr-4 p-1';
+            const logoUrl = safeHttpsUrl(p.logo_url);
+            if (logoUrl) {
+                const img = document.createElement('img');
+                img.src = logoUrl;
+                img.alt = '';
+                img.className = 'max-w-full max-h-full object-contain';
+                img.onerror = () => {
+                    img.style.display = 'none';
+                };
+                logoWrap.appendChild(img);
+            }
+
+            const meta = document.createElement('div');
+            const name = document.createElement('span');
+            name.className = 'text-xs font-bold text-white group-hover:text-[#D4AF37] uppercase';
+            name.textContent = p.name;
+
+            const tier = document.createElement('span');
+            tier.className = 'text-[9px] text-gray-500 ml-2 font-mono border border-gray-600/30 px-1';
+            tier.textContent = p.tier;
+
+            const status = document.createElement('span');
+            status.className = `text-[9px] ${p.is_active ? 'text-green-500' : 'text-gray-600'} ml-2 font-bold uppercase`;
+            status.textContent = `[${p.is_active ? 'ACTIF' : 'INACTIF'}]`;
+
+            meta.append(name, tier, status);
+
+            if (p.contract_end) {
+                const endDate = new Date(p.contract_end);
+                const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+                const warn = document.createElement('span');
+                if (diffDays < 0) {
+                    warn.className =
+                        'text-[9px] text-red-500 font-bold ml-3 bg-red-500/10 px-2 py-0.5 border border-red-500/30 animate-pulse';
+                    warn.textContent = '! EXPIRÉ';
+                    meta.appendChild(warn);
+                } else if (diffDays <= 30) {
+                    warn.className =
+                        'text-[9px] text-[#D4AF37] font-bold ml-3 bg-[#D4AF37]/10 px-2 py-0.5 border border-[#D4AF37]/30';
+                    warn.textContent = `J-${diffDays}`;
+                    meta.appendChild(warn);
+                }
+            }
+
+            left.append(logoWrap, meta);
+
+            const del = document.createElement('button');
+            del.className = 'text-[8px] text-red-500 hover:text-white uppercase font-bold';
+            del.textContent = '[ Rompre ]';
+            del.addEventListener('click', () => window.deletePartner(p.id));
+
+            div.append(left, del);
+            list.appendChild(div);
+        });
     };
 
-    window.editPartner = async function(id) {
+    window.editPartner = async function (id) {
         const { data: p } = await _supabase.from('partners').select('*').eq('id', id).single();
         if (p) {
             document.getElementById('editing-partner-id').value = p.id;
@@ -124,23 +159,35 @@ export function init() {
             document.getElementById('p-priority').value = p.priority_level || 0;
             document.getElementById('p-contract-end').value = p.contract_end || '';
             document.getElementById('p-description').value = p.description || '';
-            
-            document.getElementById('partner-submit-btn').innerText = "Mettre_à_jour_Contrat";
+
+            document.getElementById('partner-submit-btn').innerText = 'Mettre_à_jour_Contrat';
             document.getElementById('partner-cancel-btn').classList.remove('hidden');
         }
     };
 
-    window.resetPartnerForm = function() {
+    window.resetPartnerForm = function () {
         document.getElementById('partner-form').reset();
         document.getElementById('editing-partner-id').value = '';
-        document.getElementById('partner-submit-btn').innerText = "Signer_Contrat";
+        document.getElementById('partner-submit-btn').innerText = 'Signer_Contrat';
         document.getElementById('partner-cancel-btn').classList.add('hidden');
     };
 
-    window.deletePartner = async function(id) {
-        if (confirm("Rompre définitivement ce contrat de partenariat ?")) { 
-            await _supabase.from('partners').delete().eq('id', id); 
-            window.loadPartnersList(); 
+    window.deletePartner = async function (id) {
+        if (confirm('Rompre définitivement ce contrat de partenariat ?')) {
+            const statusEl = document.getElementById('partner-form-status');
+            const { error } = await _supabase.from('partners').delete().eq('id', id);
+            if (error) {
+                alert(error.message);
+                return;
+            }
+            window.loadPartnersList();
+            if (statusEl) statusEl.textContent = 'Deploy en cours…';
+            const deploy = await triggerSiteDeploy();
+            if (statusEl) {
+                statusEl.textContent = deploy.ok
+                    ? 'Contrat rompu — site en rebuild (~2 min)'
+                    : 'Contrat rompu — deploy non déclenché (partenaires visibles quand même côté site dynamique)';
+            }
         }
     };
 
@@ -150,7 +197,7 @@ export function init() {
         const payload = {
             name: document.getElementById('p-name').value,
             tier: document.getElementById('p-tier').value,
-            is_active: document.getElementById('p-status').value === "true",
+            is_active: document.getElementById('p-status').value === 'true',
             logo_url: document.getElementById('p-logo').value,
             website_url: document.getElementById('p-website').value || null,
             promo_code: document.getElementById('p-promo').value.toUpperCase() || null,
@@ -159,17 +206,26 @@ export function init() {
             contract_end: document.getElementById('p-contract-end').value || null,
             description: document.getElementById('p-description').value || null,
         };
-        
-        const res = id ? await _supabase.from('partners').update(payload).eq('id', id) : await _supabase.from('partners').insert([payload]);
-        
+
+        const statusEl = document.getElementById('partner-form-status');
+        const res = id
+            ? await _supabase.from('partners').update(payload).eq('id', id)
+            : await _supabase.from('partners').insert([payload]);
+
         if (res.error) {
             alert(res.error.message);
-        } else { 
-            window.resetPartnerForm(); 
-            window.loadPartnersList(); 
+        } else {
+            window.resetPartnerForm();
+            window.loadPartnersList();
+            if (statusEl) statusEl.textContent = 'Deploy en cours…';
+            const deploy = await triggerSiteDeploy();
+            if (statusEl) {
+                statusEl.textContent = deploy.ok
+                    ? 'Contrat enregistré — site en rebuild (~2 min)'
+                    : 'Contrat enregistré — visible immédiatement sur le site (fetch dynamique)';
+            }
         }
     });
 
-    // Chargement initial
     window.loadPartnersList();
 }
