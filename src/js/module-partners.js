@@ -12,7 +12,7 @@ export function getHTML() {
         <form id="partner-form" class="space-y-4 max-w-3xl">
             <input type="hidden" id="editing-partner-id" value="">
             
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <input type="text" id="p-name" placeholder="NOM DU PARTENAIRE / MÉCÈNE" class="admin-input" required>
                 <select id="p-tier" class="admin-input font-bold text-gold">
                     <option value="PRIME">TIER 1 : PRIME_OPERATOR (Sponsor Majeur)</option>
@@ -26,17 +26,17 @@ export function getHTML() {
                 </select>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <input type="url" id="p-logo" placeholder="URL DU LOGO (PNG/SVG transparent recommandé)" class="admin-input" required>
                 <input type="url" id="p-website" placeholder="LIEN VERS LE SITE WEB (Optionnel)" class="admin-input">
             </div>
 
-            <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 border-t border-white/5 pt-4">
                 <input type="text" id="p-promo" placeholder="CODE PROMO (Optionnel, ex: GOWRAX10)" class="admin-input uppercase">
                 <input type="text" id="p-perk" placeholder="AVANTAGE (Optionnel, ex: -10% sur la boutique)" class="admin-input">
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div class="flex flex-col">
                     <label class="text-[8px] text-gray-500 uppercase mb-1">Niveau de priorité (Plus élevé = Affiché en 1er)</label>
                     <input type="number" id="p-priority" placeholder="Priorité (ex: 10)" value="0" class="admin-input">

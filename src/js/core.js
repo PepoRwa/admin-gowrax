@@ -107,19 +107,21 @@ window.Core = class Core {
     }
 
     static setupLogin() {
-        document.getElementById('login-button').addEventListener('click', async () => {
+        const form = document.getElementById('login-form');
+        const run = async (e) => {
+            e?.preventDefault?.();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const btn = document.getElementById('login-button');
             const err = document.getElementById('login-error');
 
-            btn.innerText = 'AUTHENTIFICATION...';
+            btn.innerText = 'Authentification…';
             err.classList.add('hidden');
 
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
-                btn.innerText = 'INITIALISER_LIAISON';
+                btn.innerText = 'Se connecter';
                 err.innerText = `ÉCHEC : ${error.message}`;
                 err.classList.remove('hidden');
                 return;
@@ -127,7 +129,7 @@ window.Core = class Core {
 
             if (!isAdminUser(data.user)) {
                 await _supabase.auth.signOut();
-                btn.innerText = 'INITIALISER_LIAISON';
+                btn.innerText = 'Se connecter';
                 err.innerText = 'ACCÈS REFUSÉ : compte non administrateur.';
                 err.classList.remove('hidden');
                 return;
@@ -135,7 +137,8 @@ window.Core = class Core {
 
             SessionGuard.start();
             this.buildDashboard();
-        });
+        };
+        form?.addEventListener('submit', run);
     }
 
     static async logout() {
@@ -145,7 +148,6 @@ window.Core = class Core {
 
     static buildDashboard() {
         document.getElementById('login-zone').style.display = 'none';
-        document.body.style.overflow = 'auto';
 
         const appRoot = document.getElementById('app-root');
         const template = document.getElementById('dashboard-template');
@@ -169,13 +171,19 @@ window.Core = class Core {
 
     static switchView(viewId) {
         document.querySelectorAll('.view-section').forEach((s) => s.classList.remove('active'));
-        document.querySelectorAll('.nav-link').forEach((l) => l.classList.remove('active'));
+        document.querySelectorAll('.nav-link').forEach((l) => {
+            l.classList.remove('active');
+            l.setAttribute('aria-current', 'false');
+        });
 
         const section = document.getElementById(viewId);
         const link = document.getElementById('link-' + viewId.split('-')[1]);
 
         if (section) section.classList.add('active');
-        if (link) link.classList.add('active');
+        if (link) {
+            link.classList.add('active');
+            link.setAttribute('aria-current', 'page');
+        }
     }
 };
 

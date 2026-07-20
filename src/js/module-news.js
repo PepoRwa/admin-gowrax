@@ -10,7 +10,7 @@ export function getHTML() {
         <form id="news-form" class="space-y-4 max-w-3xl">
             <input type="hidden" id="editing-news-id" value="">
             <input type="text" id="n-title" placeholder="TITRE DU RAPPORT" class="admin-input text-lg" required>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <input type="text" id="n-slug" placeholder="SLUG" class="admin-input" required>
                 <input type="text" id="n-tags" placeholder="TAGS (SÉPARÉS PAR VIRGULES)" class="admin-input">
             </div>

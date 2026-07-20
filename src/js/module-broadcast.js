@@ -10,14 +10,14 @@ export function getHTML() {
         </header>
         <form id="broadcast-form" class="space-y-4 max-w-3xl">
             <input type="hidden" id="editing-broadcast-id" value="">
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <input type="text" id="b-tag" placeholder="VERSION TAG (Ex: v1-tournoi)" class="admin-input" required>
                 <select id="b-status" class="admin-input font-bold">
                     <option value="false" class="text-gray-500">DÉSACTIVÉ (Caché)</option>
                     <option value="true" class="text-green-500">ACTIF (En ligne)</option>
                 </select>
             </div>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <input type="text" id="b-title" placeholder="TITRE (Ex: Mise à jour Système)" class="admin-input" required>
                 <select id="b-target" class="admin-input">
                     <option value="ALL">CIBLE: TOUTES LES PAGES</option>
@@ -28,7 +28,7 @@ export function getHTML() {
             </div>
             <p class="mt-2 font-mono text-[10px] text-lavender">HTML simple autorisé (b, i, a, p, ul…). Scripts et handlers retirés à l'enregistrement.</p>
             <textarea id="b-content" rows="6" placeholder="Message du pop-up..." class="admin-input" required></textarea>
-            <div class="grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 border-t border-white/5 pt-4">
                 <input type="text" id="b-btn-text" placeholder="TEXTE DU BOUTON (Optionnel)" class="admin-input">
                 <input type="url" id="b-btn-link" placeholder="LIEN DU BOUTON (https://...)" class="admin-input">
             </div>
