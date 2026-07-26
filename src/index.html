@@ -81,9 +81,19 @@
                             <svg class="mx-auto h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                     </div>
-                    <div class="inline-flex items-center gap-2 rounded-full border border-mint/25 bg-mint/10 px-2.5 py-1">
-                        <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-mint-dark" aria-hidden="true"></span>
-                        <span class="font-sans text-[11px] text-mint">Connecté</span>
+                    <div class="flex flex-col gap-2">
+                        <div class="inline-flex w-fit items-center gap-2 rounded-full border border-mint/25 bg-mint/10 px-2.5 py-1">
+                            <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-mint-dark" aria-hidden="true"></span>
+                            <span class="font-sans text-[11px] text-mint">Connecté</span>
+                        </div>
+                        <div id="publish-status-badge" class="inline-flex w-fit items-center gap-2 rounded-full border border-mint/25 bg-mint/10 px-2.5 py-1">
+                            <span id="publish-status-dot" class="h-1.5 w-1.5 animate-pulse rounded-full bg-mint-dark" aria-hidden="true"></span>
+                            <span id="publish-status-label" class="font-sans text-[11px] text-mint">Site à jour</span>
+                        </div>
+                        <button type="button" id="publish-site-btn" onclick="window.Core.publishSite()" disabled class="btn-pub w-full !px-3 !py-2 text-xs opacity-50 pointer-events-none">
+                            Publier sur le site
+                        </button>
+                        <p id="publish-status-hint" class="font-sans text-[11px] leading-snug text-content-muted"></p>
                     </div>
                 </div>
 
@@ -186,6 +196,11 @@
             const picker = document.getElementById('storage-picker-modal');
             if (upload && !upload.classList.contains('hidden')) window.StorageModule?.closeUploadModal?.();
             if (picker && !picker.classList.contains('hidden')) window.StorageModule?.closePicker?.();
+            const agentPreview = document.getElementById('agent-preview-modal');
+            if (agentPreview && !agentPreview.classList.contains('hidden')) {
+                agentPreview.classList.add('hidden');
+                agentPreview.classList.remove('flex');
+            }
         });
     </script>
 

@@ -15,7 +15,7 @@ function isAdminUser(user) {
     return user?.app_metadata?.role === 'admin';
 }
 
-/** Déclenche le rebuild GitHub Pages (après publish news) */
+/** Déclenche le rebuild GitHub Pages (bouton Publier) */
 export async function triggerSiteDeploy() {
     try {
         const { data: { session } } = await _supabase.auth.getSession();
@@ -28,19 +28,134 @@ export async function triggerSiteDeploy() {
                 apikey: SUPABASE_KEY,
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ source: 'admin-news' }),
+            body: JSON.stringify({ source: 'admin-publish' }),
         });
 
-        if (!res.ok) {
+        // 200 = dispatched, 202 = coalesced (déjà demandé récemment)
+        if (res.status !== 200 && res.status !== 202) {
             const detail = await res.text();
             console.warn('[deploy]', res.status, detail);
             return { ok: false, error: detail };
         }
-        return { ok: true, ...(await res.json()) };
+        return { ok: true, status: res.status, ...(await res.json()) };
     } catch (err) {
         console.warn('[deploy]', err);
         return { ok: false, error: String(err) };
     }
+}
+
+export async function getPublishState() {
+    const { data, error } = await _supabase
+        .from('site_publish_state')
+        .select('needs_rebuild, content_updated_at, last_deploy_at')
+        .eq('id', 1)
+        .maybeSingle();
+    if (error) {
+        console.warn('[publish-state]', error.message);
+        return { needs_rebuild: false };
+    }
+    return data || { needs_rebuild: false };
+}
+
+export async function markSiteDirty() {
+    const { data: { session } } = await _supabase.auth.getSession();
+    const now = new Date().toISOString();
+    const { error } = await _supabase
+        .from('site_publish_state')
+        .update({
+            needs_rebuild: true,
+            content_updated_at: now,
+            updated_at: now,
+            updated_by: session?.user?.id || null,
+        })
+        .eq('id', 1);
+    if (error) console.warn('[mark-dirty]', error.message);
+    await refreshPublishBadge();
+    return !error;
+}
+
+export async function markSitePublished() {
+    const now = new Date().toISOString();
+    const { error } = await _supabase
+        .from('site_publish_state')
+        .update({
+            needs_rebuild: false,
+            last_deploy_at: now,
+            updated_at: now,
+        })
+        .eq('id', 1);
+    if (error) console.warn('[mark-published]', error.message);
+    await refreshPublishBadge();
+    return !error;
+}
+
+export async function refreshPublishBadge() {
+    const state = await getPublishState();
+    const dirty = !!state.needs_rebuild;
+    const badge = document.getElementById('publish-status-badge');
+    const btn = document.getElementById('publish-site-btn');
+    const label = document.getElementById('publish-status-label');
+    const dot = document.getElementById('publish-status-dot');
+
+    if (label) label.textContent = dirty ? 'Site pas à jour' : 'Site à jour';
+    if (badge) {
+        badge.className = dirty
+            ? 'inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-2.5 py-1'
+            : 'inline-flex items-center gap-2 rounded-full border border-mint/25 bg-mint/10 px-2.5 py-1';
+    }
+    if (dot) {
+        dot.className = dirty
+            ? 'h-1.5 w-1.5 rounded-full bg-gold'
+            : 'h-1.5 w-1.5 animate-pulse rounded-full bg-mint-dark';
+    }
+    if (label) {
+        label.className = dirty
+            ? 'font-sans text-[11px] text-gold'
+            : 'font-sans text-[11px] text-mint';
+    }
+    if (btn) {
+        btn.disabled = !dirty || btn.dataset.busy === '1';
+        btn.classList.toggle('opacity-50', btn.disabled);
+        btn.classList.toggle('pointer-events-none', btn.disabled);
+    }
+    return state;
+}
+
+export async function publishSite() {
+    const btn = document.getElementById('publish-site-btn');
+    const hint = document.getElementById('publish-status-hint');
+    if (btn?.dataset.busy === '1') return { ok: false, error: 'busy' };
+
+    if (btn) {
+        btn.dataset.busy = '1';
+        btn.disabled = true;
+        btn.textContent = 'Publication…';
+    }
+    if (hint) hint.textContent = 'Lancement du rebuild…';
+
+    const deploy = await triggerSiteDeploy();
+    if (!deploy.ok) {
+        if (btn) {
+            btn.dataset.busy = '0';
+            btn.textContent = 'Publier sur le site';
+        }
+        if (hint) hint.textContent = 'Échec du deploy — réessaie';
+        await refreshPublishBadge();
+        return deploy;
+    }
+
+    await markSitePublished();
+    if (btn) {
+        btn.dataset.busy = '0';
+        btn.textContent = 'Publier sur le site';
+    }
+    if (hint) {
+        hint.textContent = deploy.coalesced
+            ? 'Déjà en cours (coalescé) — ~2 min'
+            : 'Rebuild lancé — en ligne dans ~2 min';
+    }
+    await refreshPublishBadge();
+    return deploy;
 }
 
 /** Session idle timeout + periodic auth re-check (no client-side "security theater"). */
@@ -157,6 +272,7 @@ window.Core = class Core {
         appRoot.classList.remove('hidden');
 
         this.loadModules();
+        refreshPublishBadge();
     }
 
     static async loadModules() {
@@ -169,6 +285,10 @@ window.Core = class Core {
         }
 
         this.switchView('view-news');
+    }
+
+    static publishSite() {
+        return publishSite();
     }
 
     static switchView(viewId) {

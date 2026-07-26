@@ -1,4 +1,4 @@
-import { _supabase, triggerSiteDeploy } from './core.js';
+import { _supabase, markSiteDirty } from './core.js';
 import { safeSiteHref } from './security-utils.js';
 
 const STATUS = ['open', 'urgent', 'soon', 'closed'];
@@ -17,7 +17,7 @@ export function getHTML() {
     <header class="panel-header">
       <p class="panel-kicker">Contenu</p>
       <h3 class="panel-title">Recrutements</h3>
-      <p id="recruit-form-status" class="panel-desc">Intro de page et postes ouverts</p>
+      <p id="recruit-form-status" class="panel-desc">Enregistrer en DB, puis Publier sur le site</p>
     </header>
 
     <form id="recruit-settings-form" class="mb-12 max-w-3xl space-y-4">
@@ -87,11 +87,8 @@ export function init() {
   let positions = [];
 
   async function afterMutate(okMsg) {
-    statusEl.textContent = 'Publication…';
-    const deploy = await triggerSiteDeploy();
-    statusEl.textContent = deploy.ok
-      ? `${okMsg} — site en rebuild (~2 min)`
-      : `${okMsg} — deploy non déclenché`;
+    await markSiteDirty();
+    statusEl.textContent = `${okMsg} — pas encore publié sur le site`;
   }
 
   window.loadRecruitment = async function () {

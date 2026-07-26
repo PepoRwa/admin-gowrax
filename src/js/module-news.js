@@ -1,4 +1,4 @@
-import { _supabase, triggerSiteDeploy } from './core.js';
+import { _supabase, markSiteDirty } from './core.js';
 
 export function getHTML() {
     return `
@@ -6,7 +6,7 @@ export function getHTML() {
         <header class="panel-header">
             <p class="panel-kicker">Contenu</p>
             <h3 class="panel-title">Actualités</h3>
-            <p id="news-form-status" class="panel-desc">Nouveau rapport</p>
+            <p id="news-form-status" class="panel-desc">Nouveau rapport — Enregistrer puis Publier sur le site</p>
         </header>
         <form id="news-form" class="space-y-4 max-w-3xl">
             <input type="hidden" id="editing-news-id" value="">
@@ -18,7 +18,7 @@ export function getHTML() {
             <input type="url" id="n-image" placeholder="URL image bannière" class="admin-input">
             <textarea id="n-content" rows="10" placeholder="Contenu Markdown…" class="admin-input font-mono text-xs" required></textarea>
             <div class="flex gap-4">
-                <button type="submit" id="news-submit-btn" class="btn-pub flex-1">Publier</button>
+                <button type="submit" id="news-submit-btn" class="btn-pub flex-1">Enregistrer</button>
                 <button type="button" id="news-cancel-btn" class="btn-cancel hidden" onclick="window.resetNewsForm()">Annuler</button>
             </div>
         </form>
@@ -77,7 +77,7 @@ export function init() {
     window.resetNewsForm = function () {
         document.getElementById('news-form').reset();
         document.getElementById('editing-news-id').value = '';
-        document.getElementById('news-submit-btn').innerText = 'Publier';
+        document.getElementById('news-submit-btn').innerText = 'Enregistrer';
         document.getElementById('news-cancel-btn').classList.add('hidden');
     };
 
@@ -89,9 +89,8 @@ export function init() {
                 return;
             }
             window.loadNewsList();
-            triggerSiteDeploy().then((r) => {
-                if (r.ok) document.getElementById('news-form-status').textContent = 'Deploy site lancé (~2 min)';
-            });
+            await markSiteDirty();
+            document.getElementById('news-form-status').textContent = 'Supprimé — pas encore publié sur le site';
         }
     };
 
@@ -115,11 +114,8 @@ export function init() {
         }
         window.resetNewsForm();
         window.loadNewsList();
-        statusEl.textContent = 'Deploy en cours…';
-        const deploy = await triggerSiteDeploy();
-        statusEl.textContent = deploy.ok
-            ? 'Rapport enregistré — site en rebuild (~2 min)'
-            : 'Rapport OK — deploy non déclenché (voir config Supabase/GitHub)';
+        await markSiteDirty();
+        statusEl.textContent = 'Enregistré — pas encore publié sur le site';
     });
 
     window.loadNewsList();

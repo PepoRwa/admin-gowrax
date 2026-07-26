@@ -1,6 +1,6 @@
-import { _supabase, triggerSiteDeploy } from './core.js';
+import { _supabase, markSiteDirty } from './core.js';
 import { safeHttpsUrl, safeSiteHref } from './security-utils.js';
-import { AGENT_OPTIONS, agentPortraitUrl } from './agents-catalog.js';
+import { AGENT_OPTIONS, agentName, agentPortraitUrl } from './agents-catalog.js';
 
 function agentSelectHtml(selected) {
   const opts = ['<option value="">— Aucun —</option>']
@@ -27,7 +27,9 @@ function staffRow(s = {}) {
 
 function playerRow(p = {}) {
   const preview = p.agentId
-    ? `<img src="${agentPortraitUrl(p.agentId)}" alt="" class="r-agent-preview h-12 w-10 object-contain">`
+    ? `<button type="button" class="r-agent-preview-btn shrink-0 rounded-lg border border-line bg-black/20 p-1 transition hover:border-lavender/50" data-agent-id="${esc(p.agentId)}" title="Agrandir l’aperçu">
+        <img src="${agentPortraitUrl(p.agentId)}" alt="" class="r-agent-preview h-12 w-10 object-contain pointer-events-none">
+      </button>`
     : '<span class="r-agent-preview text-xs text-content-muted">—</span>';
   return `<div class="r-player-row space-y-2 rounded-xl border border-line bg-surface-elevated/50 p-3">
     <div class="grid gap-2 md:grid-cols-4">
@@ -72,9 +74,17 @@ export function getHTML() {
     <header class="panel-header">
       <p class="panel-kicker">Contenu</p>
       <h3 class="panel-title">Rosters</h3>
-      <p id="roster-form-status" class="panel-desc">Divisions publiées au prochain build</p>
+      <p id="roster-form-status" class="panel-desc">Enregistrer en DB, puis Publier sur le site</p>
     </header>
     <div id="roster-list" class="mb-10 max-w-3xl space-y-2"></div>
+    <div id="agent-preview-modal" class="fixed inset-0 z-[250] hidden items-center justify-center bg-black/80 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="agent-preview-title">
+      <div class="relative w-full max-w-sm rounded-2xl border border-line bg-surface-elevated p-6 text-center">
+        <button type="button" id="agent-preview-close" class="absolute right-3 top-3 min-h-11 min-w-11 text-2xl leading-none text-content-muted hover:text-rose" aria-label="Fermer">&times;</button>
+        <h3 id="agent-preview-title" class="mb-4 font-heading text-lg font-bold text-content">Agent</h3>
+        <img id="agent-preview-img" src="" alt="" class="mx-auto max-h-72 w-auto object-contain">
+        <p id="agent-preview-error" class="mt-4 hidden font-sans text-sm text-rose">Image indisponible</p>
+      </div>
+    </div>
     <form id="roster-form" class="hidden max-w-4xl space-y-4">
       <input type="hidden" id="r-slug" value="">
       <div class="grid gap-4 md:grid-cols-2">
@@ -254,25 +264,72 @@ export function init() {
     if (t?.matches?.('[data-remove-staff]')) t.closest('.r-staff-row')?.remove();
     if (t?.matches?.('[data-remove-player]')) t.closest('.r-player-row')?.remove();
     if (t?.matches?.('[data-remove-ach]')) t.closest('.r-ach-row')?.remove();
+    const previewBtn = t?.closest?.('[data-agent-id]');
+    if (previewBtn) openAgentPreview(previewBtn.getAttribute('data-agent-id'));
   });
 
   form?.addEventListener('change', (e) => {
-    const sel = e.target?.closest?.('.r-agent');
-    if (!sel) return;
-    const row = sel.closest('.r-player-row');
-    const preview = row?.querySelector('.r-agent-preview');
-    if (!preview) return;
-    if (sel.value) {
-      preview.outerHTML = `<img src="${agentPortraitUrl(sel.value)}" alt="" class="r-agent-preview h-12 w-10 object-contain">`;
+    if (!e.target.classList.contains('r-agent')) return;
+    const wrap = e.target.parentElement;
+    const id = e.target.value;
+    const existing = wrap?.querySelector('.r-agent-preview-btn, .r-agent-preview');
+    existing?.remove();
+    if (!wrap) return;
+    if (id) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className =
+        'r-agent-preview-btn shrink-0 rounded-lg border border-line bg-black/20 p-1 transition hover:border-lavender/50';
+      btn.dataset.agentId = id;
+      btn.title = 'Agrandir l’aperçu';
+      btn.innerHTML = `<img src="${agentPortraitUrl(id)}" alt="" class="r-agent-preview h-12 w-10 object-contain pointer-events-none">`;
+      wrap.appendChild(btn);
     } else {
-      preview.outerHTML = '<span class="r-agent-preview text-[10px] text-content-muted">—</span>';
+      const span = document.createElement('span');
+      span.className = 'r-agent-preview text-xs text-content-muted';
+      span.textContent = '—';
+      wrap.appendChild(span);
     }
   });
 
   document.getElementById('roster-cancel-btn')?.addEventListener('click', () => {
     form.classList.add('hidden');
     form.reset();
-    statusEl.textContent = 'Divisions publiées au prochain build';
+    statusEl.textContent = 'Enregistrer en DB, puis Publier sur le site';
+  });
+
+  function openAgentPreview(agentId) {
+    const modal = document.getElementById('agent-preview-modal');
+    const img = document.getElementById('agent-preview-img');
+    const title = document.getElementById('agent-preview-title');
+    const err = document.getElementById('agent-preview-error');
+    if (!modal || !img || !agentId) return;
+    title.textContent = agentName(agentId) || 'Agent';
+    err.classList.add('hidden');
+    img.classList.remove('hidden');
+    img.onerror = () => {
+      img.classList.add('hidden');
+      err.classList.remove('hidden');
+    };
+    img.onload = () => {
+      img.classList.remove('hidden');
+      err.classList.add('hidden');
+    };
+    img.src = agentPortraitUrl(agentId);
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeAgentPreview() {
+    const modal = document.getElementById('agent-preview-modal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  document.getElementById('agent-preview-close')?.addEventListener('click', closeAgentPreview);
+  document.getElementById('agent-preview-modal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'agent-preview-modal') closeAgentPreview();
   });
 
   form?.addEventListener('submit', async (e) => {
@@ -324,11 +381,8 @@ export function init() {
       return;
     }
     window.loadRosterList();
-    statusEl.textContent = 'Publication…';
-    const deploy = await triggerSiteDeploy();
-    statusEl.textContent = deploy.ok
-      ? 'Division enregistrée — site en rebuild (~2 min)'
-      : `Enregistré — deploy non déclenché (${deploy.error || '?'})`;
+    await markSiteDirty();
+    statusEl.textContent = 'Enregistré — pas encore publié sur le site';
   });
 
   window.loadRosterList();

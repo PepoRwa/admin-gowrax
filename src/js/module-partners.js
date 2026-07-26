@@ -1,4 +1,4 @@
-import { _supabase, triggerSiteDeploy } from './core.js';
+import { _supabase } from './core.js';
 import { safeHttpsUrl } from './security-utils.js';
 
 export function getHTML() {
@@ -161,7 +161,7 @@ export function init() {
             document.getElementById('p-contract-end').value = p.contract_end || '';
             document.getElementById('p-description').value = p.description || '';
 
-            document.getElementById('partner-submit-btn').innerText = 'Mettre_à_jour_Contrat';
+            document.getElementById('partner-submit-btn').innerText = 'Mettre à jour';
             document.getElementById('partner-cancel-btn').classList.remove('hidden');
         }
     };
@@ -169,7 +169,7 @@ export function init() {
     window.resetPartnerForm = function () {
         document.getElementById('partner-form').reset();
         document.getElementById('editing-partner-id').value = '';
-        document.getElementById('partner-submit-btn').innerText = 'Signer_Contrat';
+        document.getElementById('partner-submit-btn').innerText = 'Enregistrer';
         document.getElementById('partner-cancel-btn').classList.add('hidden');
     };
 
@@ -182,13 +182,7 @@ export function init() {
                 return;
             }
             window.loadPartnersList();
-            if (statusEl) statusEl.textContent = 'Deploy en cours…';
-            const deploy = await triggerSiteDeploy();
-            if (statusEl) {
-                statusEl.textContent = deploy.ok
-                    ? 'Contrat rompu — site en rebuild (~2 min)'
-                    : 'Contrat rompu — deploy non déclenché (partenaires visibles quand même côté site dynamique)';
-            }
+            if (statusEl) statusEl.textContent = 'Contrat rompu — visible immédiatement (live)';
         }
     };
 
@@ -218,13 +212,7 @@ export function init() {
         } else {
             window.resetPartnerForm();
             window.loadPartnersList();
-            if (statusEl) statusEl.textContent = 'Deploy en cours…';
-            const deploy = await triggerSiteDeploy();
-            if (statusEl) {
-                statusEl.textContent = deploy.ok
-                    ? 'Contrat enregistré — site en rebuild (~2 min)'
-                    : 'Contrat enregistré — visible immédiatement sur le site (fetch dynamique)';
-            }
+            if (statusEl) statusEl.textContent = 'Enregistré — visible immédiatement sur le site (live)';
         }
     });
 
