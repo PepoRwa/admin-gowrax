@@ -89,9 +89,28 @@ export function validateUploadFile(file) {
 }
 
 export function safeHttpsUrl(url) {
+    let t = String(url ?? '').trim();
+    if (!t) return '';
+
+    // Host/path without scheme (e.g. twitch.tv/foo) → https://…
+    if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(t) && /^[\w.-]+\.[a-z]{2,}([/:?]|$)/i.test(t)) {
+        t = `https://${t}`;
+    }
+
     try {
-        const u = new URL(String(url || ''), window.location.origin);
+        // Absolute only — empty / relative must not resolve to the admin origin.
+        const u = new URL(t);
         if (u.protocol !== 'https:' && u.protocol !== 'http:') return '';
+
+        const host = u.hostname.toLowerCase();
+        // Recover mistaken saves like https://admin.gowrax.me/twitch.tv/user
+        if (host === 'admin.gowrax.me' || host === 'localhost' || host === '127.0.0.1') {
+            const path = u.pathname.replace(/^\//, '') + u.search;
+            if (/^(twitch\.tv|x\.com|twitter\.com|instagram\.com|youtube\.com|www\.)/i.test(path)) {
+                return safeHttpsUrl(`https://${path}`);
+            }
+            return '';
+        }
         return u.href;
     } catch {
         return '';
