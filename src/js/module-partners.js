@@ -4,59 +4,60 @@ import { safeHttpsUrl } from './security-utils.js';
 export function getHTML() {
     return `
     <section id="view-partners" class="view-section">
-        <header class="mb-10">
-            <h3 class="font-heading text-xl font-bold tracking-tight text-gold">Partenariats</h3>
-            <p id="partner-form-status" class="font-mono text-[9px] uppercase text-content-muted">Nouveau partenaire</p>
+        <header class="panel-header">
+            <p class="panel-kicker">Réseau</p>
+            <h3 class="panel-title">Partenaires</h3>
+            <p id="partner-form-status" class="panel-desc">Nouveau partenaire</p>
         </header>
         
         <form id="partner-form" class="space-y-4 max-w-3xl">
             <input type="hidden" id="editing-partner-id" value="">
             
             <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <input type="text" id="p-name" placeholder="NOM DU PARTENAIRE / MÉCÈNE" class="admin-input" required>
-                <select id="p-tier" class="admin-input font-bold text-gold">
-                    <option value="PRIME">TIER 1 : PRIME_OPERATOR (Sponsor Majeur)</option>
-                    <option value="OFFICIAL">TIER 2 : OFFICIAL_LINK (Partenaire)</option>
-                    <option value="AFFILIATE" selected>TIER 3 : AFFILIATE (Affiliation)</option>
-                    <option value="PATRON">TIER 4 : PATRON (Mécène / Donateur)</option>
+                <input type="text" id="p-name" placeholder="Nom du partenaire" class="admin-input" required>
+                <select id="p-tier" class="admin-input">
+                    <option value="PRIME">Tier 1 — Sponsor majeur</option>
+                    <option value="OFFICIAL">Tier 2 — Partenaire officiel</option>
+                    <option value="AFFILIATE" selected>Tier 3 — Affiliation</option>
+                    <option value="PATRON">Tier 4 — Mécène</option>
                 </select>
-                <select id="p-status" class="admin-input font-bold">
-                    <option value="true" class="text-mint-dark">CONTRAT ACTIF</option>
-                    <option value="false" class="text-content-muted">CONTRAT SUSPENDU</option>
+                <select id="p-status" class="admin-input">
+                    <option value="true">Contrat actif</option>
+                    <option value="false">Contrat suspendu</option>
                 </select>
             </div>
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <input type="url" id="p-logo" placeholder="URL DU LOGO (PNG/SVG transparent recommandé)" class="admin-input" required>
-                <input type="url" id="p-website" placeholder="LIEN VERS LE SITE WEB (Optionnel)" class="admin-input">
+                <input type="url" id="p-logo" placeholder="URL du logo (PNG/SVG transparent)" class="admin-input" required>
+                <input type="url" id="p-website" placeholder="Site web (optionnel)" class="admin-input">
             </div>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 border-t border-white/5 pt-4">
-                <input type="text" id="p-promo" placeholder="CODE PROMO (Optionnel, ex: GOWRAX10)" class="admin-input uppercase">
-                <input type="text" id="p-perk" placeholder="AVANTAGE (Optionnel, ex: -10% sur la boutique)" class="admin-input">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 border-t border-line pt-4">
+                <input type="text" id="p-promo" placeholder="Code promo (ex. GOWRAX10)" class="admin-input">
+                <input type="text" id="p-perk" placeholder="Avantage (ex. −10% boutique)" class="admin-input">
             </div>
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div class="flex flex-col">
-                    <label class="text-[8px] text-gray-500 uppercase mb-1">Niveau de priorité (Plus élevé = Affiché en 1er)</label>
-                    <input type="number" id="p-priority" placeholder="Priorité (ex: 10)" value="0" class="admin-input">
+                    <label class="mb-1.5 font-heading text-xs font-semibold text-content-muted">Priorité (plus haut = affiché en premier)</label>
+                    <input type="number" id="p-priority" placeholder="ex. 10" value="0" class="admin-input">
                 </div>
                 <div class="flex flex-col">
-                    <label class="text-[8px] text-gray-500 uppercase mb-1">Fin du contrat (Invisible au public)</label>
-                    <input type="date" id="p-contract-end" class="admin-input" style="color: #888;">
+                    <label class="mb-1.5 font-heading text-xs font-semibold text-content-muted">Fin de contrat (privé)</label>
+                    <input type="date" id="p-contract-end" class="admin-input">
                 </div>
             </div>
 
-            <textarea id="p-description" rows="4" placeholder="DESCRIPTION COURTE DU PARTENARIAT..." class="admin-input text-xs"></textarea>
+            <textarea id="p-description" rows="4" placeholder="Description courte du partenariat…" class="admin-input text-sm"></textarea>
             
             <div class="flex gap-4 mt-6">
-                <button type="submit" id="partner-submit-btn" class="btn-pub flex-1 !bg-gradient-to-br from-gold-dark to-gold !text-stone-900 hover:!brightness-110">Enregistrer</button>
+                <button type="submit" id="partner-submit-btn" class="btn-pub flex-1">Enregistrer</button>
                 <button type="button" id="partner-cancel-btn" class="btn-cancel hidden" onclick="window.resetPartnerForm()">Annuler</button>
             </div>
         </form>
 
-        <div class="mt-20">
-            <h4 class="mb-6 border-b border-gold/20 pb-2 font-mono text-[10px] uppercase tracking-widest text-gold">// Partenaires</h4>
+        <div class="mt-16 max-w-3xl">
+            <h4 class="section-label">Liste</h4>
             <div id="partners-list" class="space-y-2"></div>
         </div>
     </section>
@@ -103,16 +104,16 @@ export function init() {
 
             const meta = document.createElement('div');
             const name = document.createElement('span');
-            name.className = 'font-heading text-xs font-semibold uppercase text-content group-hover:text-gold';
+            name.className = 'font-heading text-sm font-semibold text-content group-hover:text-gold';
             name.textContent = p.name;
 
             const tier = document.createElement('span');
-            tier.className = 'ml-2 border border-line px-1 font-mono text-[9px] text-content-muted';
+            tier.className = 'ml-2 rounded-md border border-line px-1.5 py-0.5 font-sans text-[11px] text-content-muted';
             tier.textContent = p.tier;
 
             const status = document.createElement('span');
-            status.className = `ml-2 font-mono text-[9px] font-bold uppercase ${p.is_active ? 'text-mint-dark' : 'text-content-muted'}`;
-            status.textContent = `[${p.is_active ? 'ACTIF' : 'INACTIF'}]`;
+            status.className = `ml-2 rounded-full px-2 py-0.5 font-sans text-[11px] ${p.is_active ? 'bg-mint/15 text-mint-dark' : 'bg-white/5 text-content-muted'}`;
+            status.textContent = p.is_active ? 'Actif' : 'Inactif';
 
             meta.append(name, tier, status);
 
@@ -122,13 +123,13 @@ export function init() {
                 const warn = document.createElement('span');
                 if (diffDays < 0) {
                     warn.className =
-                        'ml-3 animate-pulse border border-rose/30 bg-rose/10 px-2 py-0.5 font-mono text-[9px] font-bold text-rose';
-                    warn.textContent = '! EXPIRÉ';
+                        'ml-3 rounded-full border border-rose/30 bg-rose/10 px-2 py-0.5 font-sans text-[11px] text-rose';
+                    warn.textContent = 'Expiré';
                     meta.appendChild(warn);
                 } else if (diffDays <= 30) {
                     warn.className =
-                        'ml-3 border border-gold/30 bg-gold/10 px-2 py-0.5 font-mono text-[9px] font-bold text-gold';
-                    warn.textContent = `J-${diffDays}`;
+                        'ml-3 rounded-full border border-gold/30 bg-gold/10 px-2 py-0.5 font-sans text-[11px] text-gold';
+                    warn.textContent = `J−${diffDays}`;
                     meta.appendChild(warn);
                 }
             }
@@ -136,8 +137,8 @@ export function init() {
             left.append(logoWrap, meta);
 
             const del = document.createElement('button');
-            del.className = 'font-mono text-[8px] font-bold uppercase text-rose hover:text-content';
-            del.textContent = '[ Rompre ]';
+            del.className = 'btn-ghost-danger';
+            del.textContent = 'Retirer';
             del.addEventListener('click', () => window.deletePartner(p.id));
 
             div.append(left, del);

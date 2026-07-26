@@ -4,41 +4,42 @@ import { sanitizeBroadcastHtml } from './security-utils.js';
 export function getHTML() {
     return `
     <section id="view-broadcast" class="view-section">
-        <header class="mb-10">
-            <h3 class="font-heading text-xl font-bold tracking-tight text-lavender">Broadcast</h3>
-            <p id="broadcast-form-status" class="font-mono text-[9px] uppercase text-content-muted">Nouvelle alerte</p>
+        <header class="panel-header">
+            <p class="panel-kicker">Contenu</p>
+            <h3 class="panel-title">Broadcast</h3>
+            <p id="broadcast-form-status" class="panel-desc">Nouvelle alerte pop-up</p>
         </header>
         <form id="broadcast-form" class="space-y-4 max-w-3xl">
             <input type="hidden" id="editing-broadcast-id" value="">
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <input type="text" id="b-tag" placeholder="VERSION TAG (Ex: v1-tournoi)" class="admin-input" required>
-                <select id="b-status" class="admin-input font-bold">
-                    <option value="false" class="text-gray-500">DÉSACTIVÉ (Caché)</option>
-                    <option value="true" class="text-green-500">ACTIF (En ligne)</option>
+                <input type="text" id="b-tag" placeholder="Tag version (ex. v1-tournoi)" class="admin-input" required>
+                <select id="b-status" class="admin-input">
+                    <option value="false">Désactivé (caché)</option>
+                    <option value="true">Actif (en ligne)</option>
                 </select>
             </div>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <input type="text" id="b-title" placeholder="TITRE (Ex: Mise à jour Système)" class="admin-input" required>
+                <input type="text" id="b-title" placeholder="Titre (ex. Mise à jour)" class="admin-input" required>
                 <select id="b-target" class="admin-input">
-                    <option value="ALL">CIBLE: TOUTES LES PAGES</option>
-                    <option value="/contact/">CIBLE: PAGE CONTACT</option>
-                    <option value="/roster/">CIBLE: PAGES ROSTERS</option>
-                    <option value="/join/">CIBLE: RECRUTEMENT</option>
+                    <option value="ALL">Toutes les pages</option>
+                    <option value="/contact/">Page contact</option>
+                    <option value="/roster/">Pages rosters</option>
+                    <option value="/join/">Recrutement</option>
                 </select>
             </div>
-            <p class="mt-2 font-mono text-[10px] text-lavender">HTML simple autorisé (b, i, a, p, ul…). Scripts et handlers retirés à l'enregistrement.</p>
-            <textarea id="b-content" rows="6" placeholder="Message du pop-up..." class="admin-input" required></textarea>
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 border-t border-white/5 pt-4">
-                <input type="text" id="b-btn-text" placeholder="TEXTE DU BOUTON (Optionnel)" class="admin-input">
-                <input type="url" id="b-btn-link" placeholder="LIEN DU BOUTON (https://...)" class="admin-input">
+            <p class="text-sm text-content-muted">HTML simple autorisé (b, i, a, p, ul…). Scripts et handlers retirés à l’enregistrement.</p>
+            <textarea id="b-content" rows="6" placeholder="Message du pop-up…" class="admin-input" required></textarea>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 border-t border-line pt-4">
+                <input type="text" id="b-btn-text" placeholder="Texte du bouton (optionnel)" class="admin-input">
+                <input type="url" id="b-btn-link" placeholder="Lien du bouton (https://…)" class="admin-input">
             </div>
             <div class="flex gap-4 mt-6">
-                <button type="submit" id="broadcast-submit-btn" class="btn-pub flex-1">Publier_Alerte</button>
+                <button type="submit" id="broadcast-submit-btn" class="btn-pub flex-1">Publier l’alerte</button>
                 <button type="button" id="broadcast-cancel-btn" class="btn-cancel hidden" onclick="window.resetBroadcastForm()">Annuler</button>
             </div>
         </form>
-        <div class="mt-20">
-            <h4 class="mb-6 border-b border-line pb-2 font-mono text-[10px] uppercase tracking-widest text-lavender">// Alertes</h4>
+        <div class="mt-16 max-w-3xl">
+            <h4 class="section-label">Alertes</h4>
             <div id="broadcast-list" class="space-y-2"></div>
         </div>
     </section>
@@ -69,18 +70,18 @@ export function init() {
             title.textContent = n.title;
 
             const status = document.createElement('span');
-            status.className = `ml-2 font-mono text-[9px] font-bold uppercase ${n.is_active ? 'text-mint-dark' : 'text-content-muted'}`;
-            status.textContent = `[${n.is_active ? 'ACTIF' : 'INACTIF'}]`;
+            status.className = `ml-2 rounded-full px-2 py-0.5 font-sans text-[11px] ${n.is_active ? 'bg-mint/15 text-mint-dark' : 'bg-white/5 text-content-muted'}`;
+            status.textContent = n.is_active ? 'Actif' : 'Inactif';
 
             const tag = document.createElement('span');
-            tag.className = 'ml-2 font-mono text-[9px] text-content-muted';
-            tag.textContent = `TAG: ${n.version_tag}`;
+            tag.className = 'ml-2 font-sans text-[11px] text-content-muted';
+            tag.textContent = n.version_tag;
 
             left.append(title, status, tag);
 
             const del = document.createElement('button');
-            del.className = 'font-mono text-[8px] font-bold uppercase text-rose hover:text-content';
-            del.textContent = '[ Supprimer ]';
+            del.className = 'btn-ghost-danger';
+            del.textContent = 'Supprimer';
             del.addEventListener('click', () => window.deleteBroadcast(n.id));
 
             div.append(left, del);
@@ -99,7 +100,7 @@ export function init() {
             document.getElementById('b-content').value = n.content;
             document.getElementById('b-btn-text').value = n.button_text || '';
             document.getElementById('b-btn-link').value = n.button_link || '';
-            document.getElementById('broadcast-submit-btn').innerText = 'Mettre_à_jour_Alerte';
+            document.getElementById('broadcast-submit-btn').innerText = 'Mettre à jour';
             document.getElementById('broadcast-cancel-btn').classList.remove('hidden');
         }
     };
@@ -107,7 +108,7 @@ export function init() {
     window.resetBroadcastForm = function () {
         document.getElementById('broadcast-form').reset();
         document.getElementById('editing-broadcast-id').value = '';
-        document.getElementById('broadcast-submit-btn').innerText = 'Publier_Alerte';
+        document.getElementById('broadcast-submit-btn').innerText = 'Publier l’alerte';
         document.getElementById('broadcast-cancel-btn').classList.add('hidden');
     };
 

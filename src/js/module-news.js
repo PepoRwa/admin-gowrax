@@ -3,26 +3,27 @@ import { _supabase, triggerSiteDeploy } from './core.js';
 export function getHTML() {
     return `
     <section id="view-news" class="view-section">
-        <header class="mb-10">
-            <h3 class="font-heading text-xl font-bold tracking-tight text-lavender">News</h3>
-            <p id="news-form-status" class="font-mono text-[9px] uppercase text-content-muted">Nouveau rapport</p>
+        <header class="panel-header">
+            <p class="panel-kicker">Contenu</p>
+            <h3 class="panel-title">Actualités</h3>
+            <p id="news-form-status" class="panel-desc">Nouveau rapport</p>
         </header>
         <form id="news-form" class="space-y-4 max-w-3xl">
             <input type="hidden" id="editing-news-id" value="">
-            <input type="text" id="n-title" placeholder="TITRE DU RAPPORT" class="admin-input text-lg" required>
+            <input type="text" id="n-title" placeholder="Titre du rapport" class="admin-input text-lg" required>
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <input type="text" id="n-slug" placeholder="SLUG" class="admin-input" required>
-                <input type="text" id="n-tags" placeholder="TAGS (SÉPARÉS PAR VIRGULES)" class="admin-input">
+                <input type="text" id="n-slug" placeholder="Slug URL" class="admin-input" required>
+                <input type="text" id="n-tags" placeholder="Tags (séparés par des virgules)" class="admin-input">
             </div>
-            <input type="url" id="n-image" placeholder="URL IMAGE BANNIÈRE" class="admin-input">
-            <textarea id="n-content" rows="10" placeholder="# CONTENU MARKDOWN..." class="admin-input font-mono text-xs" required></textarea>
+            <input type="url" id="n-image" placeholder="URL image bannière" class="admin-input">
+            <textarea id="n-content" rows="10" placeholder="Contenu Markdown…" class="admin-input font-mono text-xs" required></textarea>
             <div class="flex gap-4">
-                <button type="submit" id="news-submit-btn" class="btn-pub flex-1">Diffuser_News</button>
+                <button type="submit" id="news-submit-btn" class="btn-pub flex-1">Publier</button>
                 <button type="button" id="news-cancel-btn" class="btn-cancel hidden" onclick="window.resetNewsForm()">Annuler</button>
             </div>
         </form>
-        <div class="mt-20">
-            <h4 class="mb-6 border-b border-line pb-2 font-mono text-[10px] uppercase tracking-widest text-lavender">// Archives</h4>
+        <div class="mt-16 max-w-3xl">
+            <h4 class="section-label">Archives</h4>
             <div id="news-list" class="space-y-2"></div>
         </div>
     </section>
@@ -50,8 +51,8 @@ export function init() {
             edit.appendChild(title);
 
             const del = document.createElement('button');
-            del.className = 'font-mono text-[8px] font-bold uppercase text-rose';
-            del.textContent = '[ Supprimer ]';
+            del.className = 'btn-ghost-danger';
+            del.textContent = 'Supprimer';
             del.addEventListener('click', () => window.deleteNews(p.id));
 
             div.append(edit, del);
@@ -68,7 +69,7 @@ export function init() {
             document.getElementById('n-tags').value = (p.tags || []).join(', ');
             document.getElementById('n-image').value = p.image_url || '';
             document.getElementById('n-content').value = p.content;
-            document.getElementById('news-submit-btn').innerText = 'Mettre_à_jour_Rapport';
+            document.getElementById('news-submit-btn').innerText = 'Mettre à jour';
             document.getElementById('news-cancel-btn').classList.remove('hidden');
         }
     };
@@ -76,7 +77,7 @@ export function init() {
     window.resetNewsForm = function () {
         document.getElementById('news-form').reset();
         document.getElementById('editing-news-id').value = '';
-        document.getElementById('news-submit-btn').innerText = 'Diffuser_News';
+        document.getElementById('news-submit-btn').innerText = 'Publier';
         document.getElementById('news-cancel-btn').classList.add('hidden');
     };
 

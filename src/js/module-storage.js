@@ -4,45 +4,46 @@ import { validateUploadFile } from './security-utils.js';
 export function getHTML() {
     return `
     <section id="view-storage" class="view-section">
-        <header class="mb-10 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+        <header class="panel-header mb-8 flex flex-col gap-4 md:mb-10 md:flex-row md:items-end md:justify-between">
             <div>
-                <h3 class="font-heading text-xl font-bold tracking-tight text-mint">Cloud Storage</h3>
-                <p class="font-mono text-[9px] uppercase text-content-muted">Assets · documents & images</p>
-                <div class="mt-2 flex items-center gap-2 font-mono text-xs text-content">
-                    <span class="text-mint">Chemin :</span>
-                    <span id="storage-breadcrumb" class="rounded bg-surface-elevated px-2 py-1">/</span>
-                    <button onclick="window.StorageModule.goUp()" id="storage-up-btn" class="hidden bg-surface-elevated px-2 py-1 text-content-muted transition-colors hover:text-content">← Retour</button>
+                <p class="panel-kicker">Réseau</p>
+                <h3 class="panel-title">Médias</h3>
+                <p class="panel-desc">Images, documents et assets du site</p>
+                <div class="mt-3 flex flex-wrap items-center gap-2 font-sans text-sm text-content">
+                    <span class="text-content-muted">Chemin</span>
+                    <span id="storage-breadcrumb" class="rounded-lg bg-surface-elevated px-2.5 py-1 font-mono text-xs">/</span>
+                    <button onclick="window.StorageModule.goUp()" id="storage-up-btn" class="hidden rounded-lg bg-surface-elevated px-2.5 py-1 text-content-muted transition-colors hover:text-content">← Retour</button>
                 </div>
             </div>
-            <button onclick="window.StorageModule.openUploadModal()" class="btn-pub !bg-gradient-to-br !from-mint-dark !to-mint !text-stone-900">Uploader</button>
+            <button onclick="window.StorageModule.openUploadModal()" class="btn-pub shrink-0">Uploader</button>
         </header>
 
         <div id="storage-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         </div>
     </section>
 
-    <div id="storage-upload-modal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/90 p-4" role="dialog" aria-modal="true" aria-labelledby="storage-upload-title">
-        <div class="relative w-full max-w-lg border border-mint/30 bg-surface-elevated p-6">
-            <h3 id="storage-upload-title" class="mb-4 font-mono uppercase tracking-widest text-mint">Uploader</h3>
-            <p class="mb-3 font-mono text-[9px] uppercase text-content-muted">jpg / png / webp / gif / svg / pdf — max 5 Mo</p>
+    <div id="storage-upload-modal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-black/80 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="storage-upload-title">
+        <div class="relative w-full max-w-lg rounded-2xl border border-line bg-surface-elevated p-6">
+            <h3 id="storage-upload-title" class="mb-2 font-heading text-lg font-bold text-content">Uploader un fichier</h3>
+            <p class="mb-4 font-sans text-sm text-content-muted">jpg / png / webp / gif / svg / pdf — max 5 Mo</p>
             <label class="sr-only" for="storage-file-input">Fichier à uploader</label>
-            <input type="file" id="storage-file-input" accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.pdf,image/jpeg,image/png,image/webp,image/gif,image/svg+xml,application/pdf" class="mb-4 w-full font-mono text-xs text-content-muted file:mr-4 file:border-0 file:bg-mint/20 file:px-4 file:py-2 file:font-bold file:text-mint hover:file:bg-mint/30">
+            <input type="file" id="storage-file-input" accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.pdf,image/jpeg,image/png,image/webp,image/gif,image/svg+xml,application/pdf" class="mb-4 w-full font-sans text-sm text-content-muted file:mr-4 file:rounded-lg file:border-0 file:bg-mint/20 file:px-4 file:py-2 file:font-heading file:text-sm file:font-semibold file:text-mint hover:file:bg-mint/30">
             <div class="flex gap-4">
-                <button onclick="window.StorageModule.uploadFile()" id="storage-upload-btn" class="btn-pub flex-1 !bg-gradient-to-br !from-mint-dark !to-mint !text-stone-900">Envoyer</button>
+                <button onclick="window.StorageModule.uploadFile()" id="storage-upload-btn" class="btn-pub flex-1">Envoyer</button>
                 <button onclick="window.StorageModule.closeUploadModal()" class="btn-cancel">Annuler</button>
             </div>
         </div>
     </div>
 
     <div id="storage-picker-modal" class="fixed inset-0 z-[300] hidden items-center justify-center bg-black/80 p-4 backdrop-blur-sm md:p-10" role="dialog" aria-modal="true" aria-labelledby="storage-picker-title">
-        <div class="relative flex max-h-[90vh] w-full max-w-7xl flex-col border border-mint/40 bg-surface-elevated p-6 shadow-2xl">
-            <div class="mb-6 flex items-center justify-between border-b border-mint/20 pb-4">
-                <h2 id="storage-picker-title" class="font-heading text-xl font-bold uppercase tracking-widest text-mint">// Select asset</h2>
+        <div class="relative flex max-h-[90vh] w-full max-w-7xl flex-col rounded-2xl border border-line bg-surface-elevated p-6 shadow-2xl">
+            <div class="mb-6 flex items-center justify-between border-b border-line pb-4">
+                <h2 id="storage-picker-title" class="font-heading text-xl font-bold text-content">Choisir un media</h2>
                 <button type="button" onclick="window.StorageModule.closePicker()" class="min-h-11 min-w-11 text-3xl leading-none text-content-muted hover:text-rose" aria-label="Fermer le sélecteur">&times;</button>
             </div>
             <div class="mb-4 flex justify-end">
                 <input type="file" id="storage-picker-upload" accept=".jpg,.jpeg,.png,.webp,.gif,.svg,.pdf,image/jpeg,image/png,image/webp,image/gif,image/svg+xml,application/pdf" class="hidden" onchange="window.StorageModule.uploadFromPicker(event)">
-                <button type="button" onclick="document.getElementById('storage-picker-upload').click()" class="min-h-11 border border-mint px-3 py-2 font-mono text-[10px] font-bold uppercase text-mint transition-colors hover:bg-mint hover:text-stone-900">Dépôt rapide</button>
+                <button type="button" onclick="document.getElementById('storage-picker-upload').click()" class="min-h-11 rounded-xl border border-mint/40 px-4 py-2 font-heading text-sm font-semibold text-mint transition-colors hover:bg-mint hover:text-stone-900">Dépôt rapide</button>
             </div>
             <div id="storage-picker-grid" class="custom-scrollbar grid flex-1 grid-cols-2 gap-3 overflow-y-auto pb-8 pr-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-10">
             </div>

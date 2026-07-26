@@ -3,6 +3,8 @@ import * as modBroadcast from './module-broadcast.js';
 import * as modNews from './module-news.js';
 import * as modPartners from './module-partners.js';
 import * as modStorage from './module-storage.js';
+import * as modRoster from './module-roster.js';
+import * as modRecruitment from './module-recruitment.js';
 
 export const SUPABASE_URL = 'https://nvtcjaallxoweujbyhng.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52dGNqYWFsbHhvd2V1amJ5aG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NDc4OTEsImV4cCI6MjA4NzQyMzg5MX0.a0FkgYwG3yxu0GMXA6wV-6GqFamB9Pu-E57_z6KkHik';
@@ -71,17 +73,17 @@ class SessionGuard {
         await _supabase.auth.signOut();
         const root = document.createElement('div');
         root.style.cssText =
-            'background:#050508;height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:monospace;color:#ef4444;position:fixed;inset:0;z-index:99999';
+            'background:#1a1625;height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Plus Jakarta Sans",system-ui,sans-serif;color:#fbcfe8;position:fixed;inset:0;z-index:99999';
         const h1 = document.createElement('h1');
-        h1.style.cssText = 'font-size:1.5rem;margin:0;text-transform:uppercase;letter-spacing:4px';
+        h1.style.cssText = 'font-size:1.5rem;margin:0;font-weight:700;letter-spacing:-0.02em';
         h1.textContent = 'Session terminée';
         const p = document.createElement('p');
-        p.style.cssText = 'margin:20px 0 40px;letter-spacing:2px;color:#aaa;font-size:12px';
+        p.style.cssText = 'margin:16px 0 32px;color:#a89bb8;font-size:0.875rem;max-width:28rem;text-align:center;line-height:1.5';
         p.textContent = message;
         const btn = document.createElement('button');
         btn.textContent = 'Recharger';
         btn.style.cssText =
-            'background:transparent;color:#ef4444;border:1px solid #ef4444;padding:15px 40px;cursor:pointer;font-weight:bold';
+            'background:linear-gradient(135deg,#c4b5fd,#ddd6fe);color:#1c1917;border:none;padding:12px 28px;cursor:pointer;font-weight:600;border-radius:12px;font-family:inherit';
         btn.onclick = () => location.reload();
         root.append(h1, p, btn);
         document.body.replaceChildren(root);
@@ -159,7 +161,7 @@ window.Core = class Core {
 
     static async loadModules() {
         const mainPanel = document.getElementById('main-panel');
-        const modules = [modBroadcast, modNews, modPartners, modStorage];
+        const modules = [modBroadcast, modNews, modPartners, modStorage, modRoster, modRecruitment];
 
         for (const module of modules) {
             mainPanel.insertAdjacentHTML('beforeend', module.getHTML());

@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#C4B5FD">
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-    <title>GRX | HQ</title>
+    <title>Gowrax · Admin</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,9 +21,9 @@
 
     <div id="login-zone" class="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-y-auto p-6">
 
-        <a href="https://gowrax.me" class="absolute top-8 left-8 flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-content-muted transition-colors hover:text-lavender group">
+        <a href="https://gowrax.me" class="absolute top-8 left-8 flex items-center gap-2 font-heading text-sm font-medium text-content-muted transition-colors hover:text-lavender group">
             <svg class="w-4 h-4 transform transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-            Retour portail
+            Retour au site
         </a>
 
         <div class="glass-panel relative w-full max-w-md overflow-visible rounded-2xl p-6 sm:p-10">
@@ -36,27 +36,27 @@
                 <div class="title-zone">
                     <p class="title-calligraphic text-5xl sm:text-6xl">Gowrax</p>
                 </div>
-                <h1 class="mb-1 font-heading text-2xl font-bold tracking-tight text-content">HQ Gateway</h1>
-                <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-lavender">Accès restreint · admin</p>
+                <h1 class="mb-1 font-heading text-2xl font-bold tracking-tight text-content">Connexion admin</h1>
+                <p class="font-sans text-sm text-content-muted">Accès réservé à l’équipe</p>
             </div>
 
             <form id="login-form" class="space-y-4">
                 <div>
-                    <label for="email" class="mb-1 block font-mono text-[10px] uppercase tracking-widest text-content-muted">Email admin</label>
+                    <label for="email" class="mb-1.5 block font-heading text-xs font-semibold text-content-muted">Email</label>
                     <input type="email" id="email" name="email" placeholder="toi@gowrax.me" class="admin-input" autocomplete="username" required>
                 </div>
                 <div>
-                    <label for="password" class="mb-1 block font-mono text-[10px] uppercase tracking-widest text-content-muted">Mot de passe</label>
+                    <label for="password" class="mb-1.5 block font-heading text-xs font-semibold text-content-muted">Mot de passe</label>
                     <input type="password" id="password" name="password" placeholder="••••••••" class="admin-input" autocomplete="current-password" required>
                 </div>
 
                 <button type="submit" id="login-button" class="btn-pub mt-4 flex w-full items-center justify-center gap-3 group">
                     Se connecter
-                    <svg class="h-4 w-4 text-white/70 transition-colors group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <svg class="h-4 w-4 opacity-70 transition-opacity group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </button>
             </form>
 
-            <div id="login-error" role="alert" aria-live="polite" class="mt-6 hidden rounded-xl border border-rose/30 bg-rose/10 p-3 text-center font-mono text-[10px] uppercase tracking-widest text-rose">
+            <div id="login-error" role="alert" aria-live="polite" class="mt-6 hidden rounded-xl border border-rose/30 bg-rose/10 p-3 text-center font-sans text-sm text-rose">
                 Identifiants invalides ou accès refusé.
             </div>
         </div>
@@ -71,51 +71,60 @@
 
             <aside id="hq-sidebar" class="glass-panel fixed inset-y-0 left-0 z-50 flex h-full w-72 -translate-x-full transform flex-col border-r border-line transition-transform duration-300 ease-in-out md:relative md:translate-x-0" aria-label="Navigation HQ">
 
-                <div class="p-8 pb-4">
-                    <div class="mb-2 flex items-center justify-between">
-                        <h2 class="flex items-center gap-1 font-heading text-2xl font-bold tracking-tight text-content">
-                            GRX<span class="text-lavender">·</span>HQ
-                        </h2>
+                <div class="p-7 pb-5">
+                    <div class="mb-3 flex items-center justify-between">
+                        <div>
+                            <p class="title-calligraphic text-3xl leading-none">Gowrax</p>
+                            <p class="mt-1 font-heading text-sm font-semibold tracking-wide text-content">Panel admin</p>
+                        </div>
                         <button type="button" onclick="toggleMobileMenu()" class="min-h-11 min-w-11 text-content-muted hover:text-content md:hidden" aria-label="Fermer le menu">
                             <svg class="mx-auto h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                     </div>
-                    <div class="flex w-fit items-center gap-2 rounded-md border border-mint/30 bg-mint/10 px-2 py-1">
+                    <div class="inline-flex items-center gap-2 rounded-full border border-mint/25 bg-mint/10 px-2.5 py-1">
                         <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-mint-dark" aria-hidden="true"></span>
-                        <span class="font-mono text-[9px] uppercase tracking-widest text-mint">Session active</span>
+                        <span class="font-sans text-[11px] text-mint">Connecté</span>
                     </div>
                 </div>
 
-                <nav class="custom-scrollbar mt-6 flex-1 space-y-1 overflow-y-auto p-4 pr-0" aria-label="Modules">
-                    <p class="mb-4 px-4 font-mono text-[10px] uppercase tracking-[0.2em] text-content-muted">/ Contenu</p>
+                <nav class="custom-scrollbar mt-2 flex-1 space-y-1 overflow-y-auto px-3 pb-4" aria-label="Modules">
+                    <p class="nav-group-label">Contenu</p>
 
-                    <button type="button" onclick="window.Core.switchView('view-broadcast'); toggleMobileMenuIfOpen();" class="nav-link w-full p-3.5 text-left font-mono text-[11px] uppercase tracking-widest text-content-muted" id="link-broadcast" aria-current="false">
-                        <svg class="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                    <button type="button" onclick="window.Core.switchView('view-broadcast'); toggleMobileMenuIfOpen();" class="nav-link w-full" id="link-broadcast" aria-current="false">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                         Broadcast
                     </button>
-                    <button type="button" onclick="window.Core.switchView('view-news'); toggleMobileMenuIfOpen();" class="nav-link active w-full p-3.5 text-left font-mono text-[11px] uppercase tracking-widest" id="link-news" aria-current="page">
-                        <svg class="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
-                        News & Intel
+                    <button type="button" onclick="window.Core.switchView('view-news'); toggleMobileMenuIfOpen();" class="nav-link active w-full" id="link-news" aria-current="page">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                        Actualités
+                    </button>
+                    <button type="button" onclick="window.Core.switchView('view-roster'); toggleMobileMenuIfOpen();" class="nav-link w-full" id="link-roster" aria-current="false">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        Rosters
+                    </button>
+                    <button type="button" onclick="window.Core.switchView('view-recruitment'); toggleMobileMenuIfOpen();" class="nav-link w-full" id="link-recruitment" aria-current="false">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        Recrutements
                     </button>
 
-                    <p class="mb-4 mt-8 px-4 font-mono text-[10px] uppercase tracking-[0.2em] text-content-muted">/ Réseau</p>
+                    <p class="nav-group-label mt-8">Réseau</p>
 
-                    <button type="button" onclick="window.Core.switchView('view-partners'); toggleMobileMenuIfOpen();" class="nav-link w-full p-3.5 text-left font-mono text-[11px] uppercase tracking-widest text-gold" id="link-partners" aria-current="false">
-                        <svg class="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                        Partenariats
+                    <button type="button" onclick="window.Core.switchView('view-partners'); toggleMobileMenuIfOpen();" class="nav-link w-full" id="link-partners" aria-current="false">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        Partenaires
                     </button>
-                    <button type="button" onclick="window.Core.switchView('view-storage'); toggleMobileMenuIfOpen();" class="nav-link w-full p-3.5 text-left font-mono text-[11px] uppercase tracking-widest text-mint" id="link-storage" aria-current="false">
-                        <svg class="h-4 w-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
-                        Cloud Vault
+                    <button type="button" onclick="window.Core.switchView('view-storage'); toggleMobileMenuIfOpen();" class="nav-link w-full" id="link-storage" aria-current="false">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+                        Médias
                     </button>
                 </nav>
 
-                <div class="flex flex-col gap-4 border-t border-line p-6">
-                    <a href="https://gowrax.me" class="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-content-muted transition-colors hover:text-content">
+                <div class="flex flex-col gap-2 border-t border-line p-4">
+                    <a href="https://gowrax.me" class="flex items-center gap-2 rounded-xl px-3 py-2.5 font-heading text-sm font-medium text-content-muted transition-colors hover:bg-white/5 hover:text-content">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m-9 9a9 9 0 019-9"/></svg>
-                        Retour portail
+                        Voir le site
                     </a>
-                    <button type="button" onclick="window.Core.logout()" class="flex w-full items-center gap-2 rounded-lg bg-rose/10 px-3 py-2 text-left font-mono text-[10px] uppercase tracking-widest text-rose transition-colors hover:bg-rose/20">
+                    <button type="button" onclick="window.Core.logout()" class="flex w-full items-center gap-2 rounded-xl bg-rose/10 px-3 py-2.5 text-left font-heading text-sm font-medium text-rose transition-colors hover:bg-rose/20">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                         Déconnexion
                     </button>
@@ -129,7 +138,7 @@
                         <button type="button" onclick="toggleMobileMenu()" class="min-h-11 min-w-11 rounded-lg border border-line bg-accent-soft p-2 text-content hover:bg-lavender/20" aria-label="Ouvrir le menu" aria-controls="hq-sidebar" aria-expanded="false" id="mobile-menu-btn">
                             <svg class="mx-auto h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                         </button>
-                        <span class="font-heading text-xl font-bold uppercase">HQ</span>
+                        <span class="title-calligraphic text-2xl leading-none">Gowrax</span>
                     </div>
                     <div class="h-2 w-2 animate-pulse rounded-full bg-mint-dark" aria-hidden="true"></div>
                 </header>

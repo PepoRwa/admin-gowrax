@@ -20,7 +20,9 @@ const RESERVED = [
   'Core', 'StorageModule', 'toggleMobileMenu', 'toggleMobileMenuIfOpen',
   'loadNewsList', 'editNews', 'resetNewsForm', 'deleteNews',
   'loadBroadcastList', 'editBroadcast', 'resetBroadcastForm', 'deleteBroadcast',
-  'loadPartnersList', 'editPartner', 'resetPartnerForm', 'deletePartner'
+  'loadPartnersList', 'editPartner', 'resetPartnerForm', 'deletePartner',
+  'loadRosterList', 'editRoster',
+  'loadRecruitment', 'editRecruitCat', 'deleteRecruitCat', 'newRecruitPos', 'editRecruitPos', 'deleteRecruitPos'
 ];
 
 const OBFUSCATOR_OPTIONS = {

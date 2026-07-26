@@ -3,11 +3,12 @@
 @tailwind utilities;
 
 /**
- * GOWRAX Admin — tokens alignés sur PepoRwa.github.io (tokens.css + dark)
+ * GOWRAX Admin — DA pastel / soft tech (alignée site public)
  */
 :root {
   --color-lavender: #c4b5fd;
   --color-lavender-dark: #7c6bc4;
+  --color-lavender-deep: #5b4ba8;
   --color-mint: #a7f3d0;
   --color-mint-dark: #34d399;
   --color-cream: #fffbeb;
@@ -18,16 +19,16 @@
   --color-sky: #bae6fd;
   --color-coral: #fecaca;
 
-  --bg: #1c1917;
-  --bg-elevated: #292524;
-  --text: #f3f4f6;
-  --text-muted: #a8a29e;
+  --bg: #1a1625;
+  --bg-elevated: #241f33;
+  --text: #f5f0ff;
+  --text-muted: #a89bb8;
   --accent: var(--color-lavender);
-  --accent-soft: rgba(124, 107, 196, 0.2);
-  --border: rgba(196, 181, 253, 0.2);
-  --shadow: rgba(0, 0, 0, 0.35);
-  --blob-lavender: rgba(196, 181, 253, 0.14);
-  --blob-mint: rgba(52, 211, 153, 0.1);
+  --accent-soft: rgba(196, 181, 253, 0.14);
+  --border: rgba(196, 181, 253, 0.18);
+  --shadow: rgba(20, 12, 40, 0.45);
+  --blob-lavender: rgba(196, 181, 253, 0.16);
+  --blob-mint: rgba(167, 243, 208, 0.1);
   --blob-rose: rgba(251, 207, 232, 0.1);
 }
 
@@ -41,33 +42,61 @@
     color: var(--text);
     background-color: var(--bg);
     background-image:
-      radial-gradient(ellipse 80% 60% at 10% 0%, var(--blob-lavender), transparent 55%),
-      radial-gradient(ellipse 70% 50% at 90% 10%, var(--blob-mint), transparent 50%),
-      radial-gradient(ellipse 60% 45% at 50% 100%, var(--blob-rose), transparent 55%);
+      radial-gradient(ellipse 80% 55% at 8% -5%, var(--blob-lavender), transparent 55%),
+      radial-gradient(ellipse 65% 45% at 95% 5%, var(--blob-mint), transparent 50%),
+      radial-gradient(ellipse 55% 40% at 50% 110%, var(--blob-rose), transparent 55%);
     background-attachment: fixed;
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
   }
 
   ::selection {
-    background: rgba(196, 181, 253, 0.45);
+    background: rgba(196, 181, 253, 0.4);
     color: var(--text);
   }
 }
 
 @layer components {
   .glass-panel {
-    background: rgba(41, 37, 36, 0.82);
-    background: color-mix(in srgb, var(--bg-elevated) 82%, transparent);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
     border: 1px solid var(--border);
-    box-shadow: 0 10px 40px var(--shadow);
+    box-shadow: 0 12px 40px var(--shadow);
+  }
+
+  .panel-header {
+    @apply mb-8 max-w-3xl;
+  }
+
+  .panel-kicker {
+    @apply mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-lavender;
+  }
+
+  .panel-title {
+    @apply font-heading text-2xl font-bold tracking-tight text-content md:text-3xl;
+  }
+
+  .panel-desc {
+    @apply mt-2 font-sans text-sm leading-relaxed text-content-muted;
+  }
+
+  .section-label {
+    @apply mb-4 border-b border-line pb-2 font-heading text-xs font-semibold tracking-wide text-content-muted;
+  }
+
+  .admin-card {
+    @apply rounded-2xl border border-line bg-surface-elevated/80 p-3 transition;
+  }
+
+  .admin-card:hover {
+    border-color: color-mix(in srgb, var(--color-lavender) 45%, transparent);
+    background: color-mix(in srgb, var(--bg-elevated) 90%, var(--color-lavender) 6%);
   }
 
   .admin-input {
-    @apply w-full rounded-xl px-4 py-3.5 font-mono text-sm outline-none transition;
-    background: rgba(255, 255, 255, 0.03);
+    @apply w-full rounded-xl px-4 py-3 font-sans text-sm outline-none transition;
+    background: rgba(255, 252, 247, 0.03);
     border: 1px solid var(--border);
     color: var(--text);
   }
@@ -75,32 +104,37 @@
   .admin-input:focus {
     border-color: var(--color-lavender);
     background: var(--accent-soft);
-    box-shadow: 0 0 0 3px rgba(196, 181, 253, 0.15);
+    box-shadow: 0 0 0 3px rgba(196, 181, 253, 0.12);
   }
 
   .admin-input::placeholder {
     color: var(--text-muted);
-    opacity: 0.7;
+    opacity: 0.75;
+    font-weight: 400;
+  }
+
+  select.admin-input {
+    @apply cursor-pointer;
   }
 
   .btn-pub {
-    @apply cursor-pointer rounded-xl px-4 py-3.5 font-heading text-sm font-semibold uppercase tracking-wider transition;
-    color: #fff;
-    background: linear-gradient(135deg, var(--color-lavender-dark), var(--color-lavender));
+    @apply cursor-pointer rounded-xl px-5 py-3 font-heading text-sm font-semibold tracking-wide transition;
+    color: #1c1917;
+    background: linear-gradient(135deg, var(--color-lavender) 0%, #ddd6fe 100%);
     border: 1px solid transparent;
-    box-shadow: 0 4px 14px var(--shadow);
+    box-shadow: 0 4px 16px rgba(124, 107, 196, 0.28);
   }
 
   .btn-pub:hover {
-    filter: brightness(1.06);
+    filter: brightness(1.05);
     transform: translateY(-1px);
   }
 
   .btn-cancel {
-    @apply rounded-xl border px-4 py-3.5 font-heading text-sm font-medium transition;
+    @apply rounded-xl border px-5 py-3 font-heading text-sm font-medium transition;
     border-color: var(--border);
     color: var(--text-muted);
-    background: var(--bg-elevated);
+    background: transparent;
   }
 
   .btn-cancel:hover {
@@ -108,18 +142,40 @@
     color: var(--text);
   }
 
+  .btn-ghost-danger {
+    @apply rounded-lg px-2 py-1 font-sans text-xs font-medium text-rose transition hover:bg-rose/10;
+  }
+
+  .nav-group-label {
+    @apply mb-3 px-4 font-mono text-[10px] uppercase tracking-[0.16em] text-content-muted;
+  }
+
   .nav-link {
-    @apply mb-1 flex items-center gap-3 rounded-r-xl border-l-2 border-transparent transition;
+    @apply mb-1 flex items-center gap-3 rounded-xl border border-transparent px-3.5 py-3 text-left font-heading text-sm font-medium tracking-normal text-content-muted transition;
+  }
+
+  .nav-link svg {
+    @apply h-4 w-4 shrink-0 opacity-60;
   }
 
   .nav-link:hover {
-    background: rgba(255, 255, 255, 0.03);
+    color: var(--text);
+    background: rgba(255, 252, 247, 0.04);
+  }
+
+  .nav-link:hover svg {
+    opacity: 0.9;
   }
 
   .nav-link.active {
-    border-left-color: var(--color-lavender);
     color: var(--color-lavender);
-    background: linear-gradient(90deg, var(--accent-soft) 0%, transparent 100%);
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--color-lavender) 28%, transparent);
+  }
+
+  .nav-link.active svg {
+    opacity: 1;
+    color: var(--color-lavender);
   }
 
   .view-section {
@@ -128,10 +184,9 @@
 
   .view-section.active {
     display: block;
-    animation: fadeInZen 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: fadeInZen 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* Great Vibes — needs air; never overflow:hidden on ancestors */
   .title-zone {
     @apply overflow-visible py-3;
   }
@@ -165,22 +220,29 @@
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(196, 181, 253, 0.25);
+    background: rgba(196, 181, 253, 0.28);
     border-radius: 10px;
+  }
+
+  #hq-sidebar {
+    background: color-mix(in srgb, var(--bg-elevated) 92%, #2a2140 8%);
+  }
+
+  #main-panel {
+    @apply custom-scrollbar;
   }
 }
 
 @keyframes fadeInZen {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-
 
 .sr-only {
   position: absolute;

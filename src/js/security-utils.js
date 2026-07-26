@@ -97,3 +97,11 @@ export function safeHttpsUrl(url) {
         return '';
     }
 }
+
+/** Relative `/path` or http(s) — blocks `//`, javascript:, data: */
+export function safeSiteHref(url) {
+    const t = String(url || '').trim();
+    if (!t) return '';
+    if (t.startsWith('/') && !t.startsWith('//')) return t;
+    return safeHttpsUrl(t);
+}
