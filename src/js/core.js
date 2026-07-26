@@ -158,34 +158,119 @@ export async function publishSite() {
     return deploy;
 }
 
-/** Session idle timeout + periodic auth re-check (no client-side "security theater"). */
+/** Session idle timeout + soft auth re-check (avoid false kicks during token refresh). */
 class SessionGuard {
-    static IDLE_MS = 15 * 60 * 1000;
+    static IDLE_MS = 60 * 60 * 1000; // 1h inactivity
+    static POLL_MS = 60 * 1000;
+    static FAIL_BEFORE_LOCK = 2;
     static idleTimer = null;
     static pollTimer = null;
+    static started = false;
+    static checking = false;
+    static locking = false;
+    static failStreak = 0;
+    static authSub = null;
 
     static start() {
+        if (this.started) return;
+        this.started = true;
+
         const resetIdle = () => {
             clearTimeout(this.idleTimer);
             this.idleTimer = setTimeout(() => this.lock('Session expirée (inactivité)'), this.IDLE_MS);
         };
-        ['mousemove', 'keydown', 'scroll', 'click'].forEach((e) =>
-            window.addEventListener(e, resetIdle, { passive: true })
+        ['mousemove', 'keydown', 'scroll', 'click', 'touchstart'].forEach((e) =>
+            window.addEventListener(e, resetIdle, { passive: true }),
         );
         resetIdle();
 
-        this.pollTimer = setInterval(async () => {
-            const { data: { session }, error } = await _supabase.auth.getSession();
-            if (!session || error || !isAdminUser(session.user)) {
-                this.lock('Session invalide ou droits insuffisants');
+        // Prefer auth events over aggressive getSession polling (refresh races → false null).
+        const { data } = _supabase.auth.onAuthStateChange((event, session) => {
+            if (this.locking) return;
+            if (event === 'SIGNED_OUT') {
+                this.lock('Session terminée');
+                return;
             }
-        }, 15000);
+            if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+                this.failStreak = 0;
+                if (session?.user && !isAdminUser(session.user)) {
+                    this.lock('Droits administrateur requis');
+                }
+            }
+        });
+        this.authSub = data?.subscription;
+
+        this.pollTimer = setInterval(() => this.checkSession(), this.POLL_MS);
+    }
+
+    static async checkSession() {
+        if (this.checking || this.locking) return;
+        this.checking = true;
+        try {
+            const { data: { session }, error } = await _supabase.auth.getSession();
+
+            // Transient blip during auto-refresh — do not lock yet.
+            if (error || !session) {
+                this.failStreak += 1;
+                if (this.failStreak < this.FAIL_BEFORE_LOCK) return;
+
+                const { data: refreshed, error: refreshErr } = await _supabase.auth.refreshSession();
+                if (refreshErr || !refreshed?.session) {
+                    this.lock('Session expirée — reconnecte-toi');
+                    return;
+                }
+                if (!isAdminUser(refreshed.session.user)) {
+                    this.lock('Droits administrateur requis');
+                    return;
+                }
+                this.failStreak = 0;
+                return;
+            }
+
+            if (!isAdminUser(session.user)) {
+                // Local JWT may be stale on claims — confirm with Auth server once.
+                const { data: { user }, error: userErr } = await _supabase.auth.getUser();
+                if (userErr || !user || !isAdminUser(user)) {
+                    this.failStreak += 1;
+                    if (this.failStreak >= this.FAIL_BEFORE_LOCK) {
+                        this.lock('Droits administrateur requis');
+                    }
+                    return;
+                }
+            }
+
+            this.failStreak = 0;
+        } catch (err) {
+            console.warn('[session-guard]', err);
+            this.failStreak += 1;
+            // Network hiccup: never lock on a single throw.
+        } finally {
+            this.checking = false;
+        }
     }
 
     static async lock(message) {
+        if (this.locking) return;
+        this.locking = true;
+        this.started = false;
+        this.failStreak = 0;
         clearTimeout(this.idleTimer);
         clearInterval(this.pollTimer);
-        await _supabase.auth.signOut();
+        this.pollTimer = null;
+        this.idleTimer = null;
+        try {
+            this.authSub?.unsubscribe?.();
+        } catch {
+            /* ignore */
+        }
+        this.authSub = null;
+
+        try {
+            await _supabase.auth.signOut({ scope: 'local' });
+        } catch {
+            /* ignore */
+        }
+
         const root = document.createElement('div');
         root.style.cssText =
             'background:#1a1625;height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Plus Jakarta Sans",system-ui,sans-serif;color:#fbcfe8;position:fixed;inset:0;z-index:99999';
@@ -211,11 +296,11 @@ window.Core = class Core {
 
         const { data: { session } } = await _supabase.auth.getSession();
         if (session) {
-            // Refresh so app_metadata.role from DB is present in JWT after role migrations
-            const { data: refreshed } = await _supabase.auth.refreshSession();
-            const user = refreshed?.session?.user || session.user;
-            if (!isAdminUser(user)) {
-                await _supabase.auth.signOut();
+            // Prefer server-validated user (fresh app_metadata) without forcing a token rotate.
+            const { data: userData, error: userErr } = await _supabase.auth.getUser();
+            const user = userData?.user || session.user;
+            if (userErr || !isAdminUser(user)) {
+                await _supabase.auth.signOut({ scope: 'local' });
                 return;
             }
             SessionGuard.start();
